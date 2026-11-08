@@ -14,7 +14,7 @@ A usage meter that reads the logs Claude Code and Codex already save on your com
 
 Full guide (landing page + walkthrough): **https://inematds.github.io/medidor-de-limite/guia/en/**
 
-## In 3 commands
+## Quick start
 
 ```bash
 git clone https://github.com/inematds/medidor-de-limite.git
@@ -48,6 +48,7 @@ The plan **doesn’t publish its limit in tokens**. So the ceiling is calibrated
 - `python3 medir.py calibrar` searches the logs for the message "You've hit your weekly limit · resets …". If it finds one, it adds up the weight from the start of that week (7 days before the reset) up to the cutoff, and uses that as the ceiling. It also saves the reset date and time so the indicator can measure the current week.
 - If it doesn’t find one: run `python3 medir.py calibrar --estourou-em "2026-10-26 18:00" --salvar` (a rough estimate: 7 days before the cutoff), or set `--teto N` manually.
 - Usage on the website, in the app, or on another machine counts toward the limit but isn’t in these logs. The calibrated ceiling already accounts for it, as long as your usage habits don’t change much.
+- The weekly gauge needs the window to cover the time since the last reset: with a smaller `--dias`, it warns you and falls back to the projection.
 - Codex almost never saves the cutoff in its logs; its ceiling usually has to be set manually.
 
 The indicator is **green** below 70% of the ceiling, **yellow** from 70% to 90%, and **red** above 90%, always with a written label.
@@ -63,13 +64,13 @@ The meter only makes suggestions. You decide whether to combine runs or pause th
 
 ## Real-world example (INEMA machine, 08/11/2026)
 
-In `exemplos/`: `relatorio.txt`, `relatorio.json`, `medidor.html`, and screenshots at 1440 px and 390 px. Generated with `--anonimo`: private project folders become `privado-N`, and their requests aren’t shown.
+In `exemplos/`: `relatorio.txt`, `relatorio.json`, `medidor.html`, and screenshots at 1440 px and 390 px. Live: https://inematds.github.io/medidor-de-limite/exemplos/medidor.html. Generated with `--anonimo`: private project folders become `privado-N`, and their requests aren’t shown.
 
-- Claude Code: 4.2 billion processed tokens in 7 days (96% cache read), 1,055 sessions, 996 from bots and timers.
-- Codex: 186 million tokens, 1,027 sessions, all `codex exec`.
-- Claude indicator: **yellow, 80.6% of the ceiling** in the week that started Monday at 9 p.m.; at the pace of days with usage, the week will end at 102%.
-- One folder accounted for 59% of the week’s weight.
-- 91 groups of repeated runs (701 runs); combining each group would save at least 8.6% of the weight.
+- Claude Code: 4.3 billion processed tokens in 7 days (96% cache read), 1,059 sessions, 999 from bots and timers.
+- Codex: 189 million tokens, 1,039 sessions, all `codex exec`.
+- Claude indicator: **yellow, 81.9% of the ceiling** in the week that started Monday at 9 p.m.; at the pace of days with usage, the week will end at 103%.
+- One folder accounted for 60% of the weight over the 7 days.
+- 91 groups of repeated runs (699 runs); combining each group would save at least 8.6% of the weight.
 
 ## Options
 
@@ -98,8 +99,10 @@ Config at `~/.config/medidor-de-limite/config.json` (ceilings, weights, project 
 ## Tests
 
 ```bash
-python3 -m pytest -q
+python3 -m unittest discover tests
 ```
+
+With pytest installed (`pip install pytest`), `python3 -m pytest -q` also works.
 
 No network access; uses synthetic JSONL logs: usage totals (without duplicates or error messages), Codex cache included in input, routines grouped by first message, repeated runs vs. daily timers, projections and indicator color, calibration by the week of the cutoff.
 

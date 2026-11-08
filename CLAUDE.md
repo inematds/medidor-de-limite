@@ -10,7 +10,7 @@ página em `medidor.template.html`, testes em `tests/`, guia em `guia/` (PT) + `
 - O plano não publica o limite em tokens: o teto vem de `calibrar` (registros do usuário) ou é à mão. Não escrever "limite oficial".
 - Projeto sem fonte: não citar material de referência, comunidade ou autor que inspirou o kit.
 - Autor dos commits: `inematds <inematds@gmail.com>`.
-- Testes sem rede: `python3 -m pytest -q`.
+- Testes sem rede: `python3 -m unittest discover tests` (ou `python3 -m pytest -q`).
 
 ## Self-learning
 

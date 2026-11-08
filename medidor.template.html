@@ -151,7 +151,7 @@ for (const [ferr, m] of Object.entries(D.medidores)) {
       <circle cx="150" cy="150" r="9" fill="var(--txt)"/>
       <text x="150" y="128" text-anchor="middle" font-size="26" font-weight="800">${pct == null ? '—' : String(pct).replace('.',',')+'%'}</text>
     </svg>
-    <p style="text-align:center;margin:.2em 0 .8em"><span class="estado ${m.cor}">${ROT[m.cor]}</span><br><span class="mut" style="font-size:.85rem">${esc(base)}</span></p>
+    <p style="text-align:center;margin:.2em 0 .8em"><span class="estado ${m.cor}">${ROT[m.cor]}</span><br><span class="mut" style="font-size:.85rem">${esc(base)}</span>${m.pct_ritmo >= 100 ? '<br><b style="color:var(--bad);font-size:.85rem">No ritmo atual, a semana passa do teto</b>' : ''}${m.aviso ? '<br><span class="mut" style="font-size:.8rem">'+esc(m.aviso)+'</span>' : ''}</p>
     <dl class="kv">
       <dt>Tokens processados</dt><dd>${fmt(f.tokens_total)}</dd>
       <dt>· cache lido</dt><dd>${fmt(f.tokens.cache_le)}</dd>
@@ -159,7 +159,7 @@ for (const [ferr, m] of Object.entries(D.medidores)) {
       <dt>· novos + saída</dt><dd>${fmt(f.tokens.novos + f.tokens.saida)}</dd>
       <dt>Peso (unidade do teto)</dt><dd>${fmt(f.peso)}</dd>
       <dt>Teto semanal</dt><dd>${m.teto ? fmt(m.teto) : '—'}</dd>
-      <dt>Projeção (média × 7)</dt><dd>${m.pct_projecao != null ? String(m.pct_projecao).replace('.',',')+'%' : fmt(m.projecao_semana)}</dd>
+      <dt>Últimos ${D.dias} dias em ritmo semanal</dt><dd>${m.pct_projecao != null ? String(m.pct_projecao).replace('.',',')+'%' : fmt(m.projecao_semana)}</dd>
       <dt>No ritmo dos ${m.dias_com_uso} dias com uso</dt><dd>${m.pct_ritmo != null ? String(m.pct_ritmo).replace('.',',')+'%' : fmt(m.projecao_ritmo)}</dd>
       <dt>Sessões (robôs/timers)</dt><dd>${f.sessoes} (${f.headless})</dd>
     </dl></div>`);

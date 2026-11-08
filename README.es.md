@@ -14,7 +14,7 @@ Un medidor que lee los registros que Claude Code y Codex ya guardan en tu comput
 
 Guía completa (página de inicio + paso a paso): **https://inematds.github.io/medidor-de-limite/guia/es/**
 
-## En 3 comandos
+## Inicio rápido
 
 ```bash
 git clone https://github.com/inematds/medidor-de-limite.git
@@ -48,6 +48,7 @@ El plan **no publica el límite en tokens**. Por eso, el límite se calibra con 
 - `python3 medir.py calibrar` busca en los registros el mensaje "You've hit your weekly limit · resets …". Si lo encuentra: suma el peso desde el inicio de esa semana (7 días antes del reinicio) hasta el momento del corte, y ese es el límite. También guarda el día y la hora del reinicio para que el indicador mida la semana actual.
 - Si no lo encuentra: `python3 medir.py calibrar --estourou-em "2026-10-26 18:00" --salvar` (estimación conservadora: 7 días antes del corte) o `--teto N` manualmente.
 - El uso en el sitio, en la app o en otra máquina cuenta para el límite, pero no aparece en estos registros. El límite calibrado ya lo contempla, siempre que tu forma de usarlo no cambie mucho.
+- El indicador semanal necesita que la ventana cubra desde el último reinicio: con un `--dias` menor, avisa y vuelve a la proyección.
 - Codex casi nunca guarda el corte en los registros; su límite suele establecerse manualmente.
 
 El indicador queda **verde** por debajo del 70% del límite, **amarillo** del 70% al 90% y **rojo** por encima, siempre con una etiqueta escrita.
@@ -63,13 +64,13 @@ El medidor solo sugiere. Tú decides si agrupas las ejecuciones o pausas el temp
 
 ## Ejemplo real (computadora del INEMA, 08/11/2026)
 
-En `exemplos/`: `relatorio.txt`, `relatorio.json`, `medidor.html` e imágenes en 1440 px y 390 px. Generado con `--anonimo`: las carpetas de proyectos privados se reemplazan por `privado-N` y sus solicitudes no se muestran.
+En `exemplos/`: `relatorio.txt`, `relatorio.json`, `medidor.html` e imágenes en 1440 px y 390 px. En vivo: https://inematds.github.io/medidor-de-limite/exemplos/medidor.html. Generado con `--anonimo`: las carpetas de proyectos privados se reemplazan por `privado-N` y sus solicitudes no se muestran.
 
-- Claude Code: 4,2 mil millones de tokens procesados en 7 días (96% de caché leída), 1.055 sesiones, 996 de robots y temporizadores.
-- Codex: 186 millones de tokens, 1.027 sesiones, todas `codex exec`.
-- Indicador de Claude: **amarillo, 80,6% del límite** en la semana que comenzó el lunes a las 21 h; al ritmo de los días con uso, la semana termina en 102%.
-- Una sola carpeta representó el 59% del peso de la semana.
-- 91 grupos de ejecuciones repetidas (701 ejecuciones); agrupar cada grupo ahorra al menos el 8,6% del peso.
+- Claude Code: 4,3 mil millones de tokens procesados en 7 días (96% de caché leída), 1.059 sesiones, 999 de robots y temporizadores.
+- Codex: 189 millones de tokens, 1.039 sesiones, todas `codex exec`.
+- Indicador de Claude: **amarillo, 81,9% del límite** en la semana que comenzó el lunes a las 21 h; al ritmo de los días con uso, la semana termina en 103%.
+- Una sola carpeta representó el 60% del peso de los 7 días.
+- 91 grupos de ejecuciones repetidas (699 ejecuciones); agrupar cada grupo ahorra al menos el 8,6% del peso.
 
 ## Opciones
 
@@ -98,8 +99,10 @@ Configuración en `~/.config/medidor-de-limite/config.json` (límites, pesos, `r
 ## Pruebas
 
 ```bash
-python3 -m pytest -q
+python3 -m unittest discover tests
 ```
+
+Con pytest instalado (`pip install pytest`), `python3 -m pytest -q` también funciona.
 
 Sin red, con registros JSONL sintéticos: suma de `usage` (sin duplicados ni mensajes de error), Codex con caché incluida en `input`, rutina según el primer mensaje, ejecuciones repetidas frente a temporizador diario, proyección y color del indicador, calibración según la semana del corte.
 

@@ -182,7 +182,7 @@
     <div class="card"><h3>Mac</h3><p>O primeiro comando instala as ferramentas da Apple, que trazem git e Python 3.</p><pre><span class="k">xcode-select --install</span>
 <span class="k">python3 --version</span></pre></div>
     <div class="card"><h3>Windows (WSL)</h3><p>No PowerShell como administrador, instale o Ubuntu e reinicie. Depois, no Ubuntu:</p><pre><span class="k">wsl --install</span>
-<span class="k">sudo apt install -y git python3</span></pre><p style="margin-top:.7em">Se o Claude Code roda no Windows (fora do WSL), aponte para a pasta dele no passo 2 com <code>--claude-dir /mnt/c/Users/SEU_USUARIO/.claude/projects</code>.</p></div>
+<span class="k">sudo apt install -y git python3</span></pre><p style="margin-top:.7em">Se o Claude Code roda no Windows (fora do WSL), aponte para a pasta dele no passo 2 com <code>--claude-dir /mnt/c/Users/SEU_USUARIO/.claude/projects</code>; o Codex do Windows entra com <code>--codex-home /mnt/c/Users/SEU_USUARIO/.codex</code>. O que roda do lado Windows e você não apontar fica fora da conta.</p></div>
   </div>
 </div></section>
 
@@ -200,7 +200,7 @@
 
   <div class="step"><div class="b">2</div><div>
     <h3>Primeira leitura: os últimos 7 dias</h3>
-    <p>Mostra os totais do Claude Code e do Codex, o top 10 de projetos, o top 10 de rotinas e os repetidos. Histórico de vários GB leva segundos, porque ele lê linha a linha e pula o que não é contagem.</p>
+    <p>Mostra os totais do Claude Code e do Codex, o top 10 de projetos, o top 10 de rotinas e os repetidos. Histórico de 8 GB leva menos de meio minuto, porque ele lê linha a linha e pula o que não é contagem.</p>
 <pre><span class="k">python3 medir.py relatorio</span></pre>
     <p>Para outra janela, use <code>--dias 14</code>. Se você tem duas contas do Codex, cada uma em uma pasta, ele acha <code>~/.codex</code>, <code>~/.codex-2</code> e a <code>$CODEX_HOME</code>; outra pasta entra com <code>--codex-home</code>.</p>
   </div></div>
@@ -210,7 +210,7 @@
     <p>Procura nos últimos 35 dias a mensagem de limite semanal e soma o que foi gasto naquela semana. Confira o número e grave.</p>
 <pre><span class="k">python3 medir.py calibrar</span>
 <span class="k">python3 medir.py calibrar --salvar</span></pre>
-    <p>Não achou nenhum corte? Diga quando foi, ou ponha um número à mão:</p>
+    <p>Não achou nenhum corte? Diga quando foi, ou ponha um número à mão. O número é na unidade <b>peso</b>, a mesma que o <code>relatorio</code> mostra por ferramenta: parta do peso de uma semana em que você chegou perto do limite.</p>
 <pre><span class="k">python3 medir.py calibrar --estourou-em "2026-10-26 18:00" --salvar</span>
 <span class="k">python3 medir.py calibrar --ferramenta codex --teto 60000000 --salvar</span></pre>
   </div></div>
@@ -240,15 +240,15 @@
 <section id="exemplos"><div class="wrap">
   <span class="chip">Exemplo real</span>
   <h2>A máquina do INEMA em 7 dias</h2>
-  <p class="sub">Medido em 08/11/2026, com <code>--anonimo</code>. Os arquivos completos estão na pasta <code>exemplos/</code> do repositório.</p>
+  <p class="sub">Medido em 08/11/2026, com <code>--anonimo</code>. Os arquivos completos estão na pasta <code>exemplos/</code> do repositório; a página está <a href="https://inematds.github.io/medidor-de-limite/exemplos/medidor.html" target="_blank" rel="noopener">ao vivo aqui</a>.</p>
   <div class="grid g4" style="margin-bottom:22px">
-    <div class="card"><h3 class="amb" style="font-size:1.6rem">4,2 bi</h3><p>tokens processados no Claude Code em 7 dias, 96% deles cache lido</p></div>
-    <div class="card"><h3 class="amb" style="font-size:1.6rem">80,6%</h3><p>do teto semanal usado desde segunda 21h: ponteiro amarelo</p></div>
-    <div class="card"><h3 class="amb" style="font-size:1.6rem">59%</h3><p>do peso da semana saiu de uma única pasta de projeto</p></div>
-    <div class="card"><h3 class="amb" style="font-size:1.6rem">701</h3><p>execuções de robô repetidas no mesmo horário, em 91 grupos</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">4,3 bi</h3><p>tokens processados no Claude Code em 7 dias, 96% deles cache lido</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">81,9%</h3><p>do teto semanal usado desde segunda 21h: ponteiro amarelo</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">60%</h3><p>do peso dos 7 dias saiu de uma única pasta de projeto</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">699</h3><p>execuções de robô repetidas no mesmo horário, em 91 grupos</p></div>
   </div>
   <div class="ex">
-    <figure><img src="assets/ex-ponteiro.jpg" alt="Página do medidor: ponteiros do Claude Code em 80,6% e do Codex sem teto" loading="lazy"><figcaption>O ponteiro do Claude Code ficou amarelo. No ritmo dos dias em que a máquina ficou ligada, a semana fecharia em 102% do teto.</figcaption></figure>
+    <figure><img src="assets/ex-ponteiro.jpg" alt="Página do medidor: ponteiros do Claude Code em 81,9% e do Codex sem teto" loading="lazy"><figcaption>O ponteiro do Claude Code ficou amarelo. No ritmo dos dias em que a máquina ficou ligada, a semana fecharia em 103% do teto.</figcaption></figure>
     <figure><img src="assets/ex-celular.jpg" alt="A mesma página no celular, com ponteiro e barras" loading="lazy"><figcaption>No celular: ponteiro, top 10 de pastas e de rotinas e a tabela de repetidos, sem rolar para o lado.</figcaption></figure>
   </div>
 </div></section>

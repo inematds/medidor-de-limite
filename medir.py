@@ -543,6 +543,9 @@ def analisar(col, cfg, dias, anonimo=False, janela_min=60, similar=0.85):
         reset = (cfg["tetos"].get(ferr) or {}).get("reset")
         if teto and reset:
             ini = ultimo_reset(reset, agora)
+            if ini and ini < col.corte:
+                m["aviso"] = (f"a semana começou em {ini.astimezone():%Y-%m-%d %H:%M}, antes da janela lida;"
+                              f" use --dias {max(7, (agora - ini).days + 1)} para o ponteiro da semana")
             if ini and ini >= col.corte:
                 usado = consumo_desde(sessoes, ferr, ini, agora)
                 m["semana_desde"] = ini.astimezone().strftime("%Y-%m-%d %H:%M")
@@ -686,7 +689,7 @@ def fmt(n):
 
 def relatorio_texto(r):
     L = []
-    L.append(f"medidor-de-limite {r['versao']} · últimos {r['dias']} dias · medido em {r['medido_em']}")
+    L.append(f"medidor-de-limite {r['versao']} · últimos {r['dias']} dia(s) · medido em {r['medido_em']}")
     L.append(f"{r['arquivos']} arquivos de sessão lidos ({str(r['gb_lidos']).replace('.', ',')} GB)")
     L.append("")
     for ferr, f in sorted(r["ferramentas"].items()):
@@ -701,8 +704,12 @@ def relatorio_texto(r):
             base = (f"semana desde {m['semana_desde']}: {m['pct_semana']}% do teto"
                     if m.get("pct_semana") is not None else f"projeção da semana: {m['pct_projecao']}% do teto")
             L.append(f"PONTEIRO {ferr}: [{m['cor'].upper()}] {base} (teto {fmt(m['teto'])})")
-            L.append(f"        projeção (média de {r['dias']} dias × 7): {m['pct_projecao']}% · no ritmo dos"
-                     f" {m['dias_com_uso']} dias com uso: {m['pct_ritmo']}%")
+            L.append(f"        últimos {r['dias']} dia(s) em ritmo semanal (média × 7): {m['pct_projecao']}% · no ritmo dos"
+                     f" {m['dias_com_uso']} dia(s) de calendário com uso: {m['pct_ritmo']}%")
+            if m.get("pct_ritmo") and m["pct_ritmo"] >= 100:
+                L.append("        ! no ritmo atual, a semana passa do teto")
+            if m.get("aviso"):
+                L.append(f"        ! {m['aviso']}")
         else:
             L.append(f"PONTEIRO {ferr}: sem teto definido — rode `python3 medir.py calibrar`"
                      f" (projeção da semana: peso {fmt(m['projecao_semana'])})")

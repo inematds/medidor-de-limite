@@ -182,7 +182,7 @@
     <div class="card"><h3>Mac</h3><p>The first command installs Apple's tools, which include git and Python 3.</p><pre><span class="k">xcode-select --install</span>
 <span class="k">python3 --version</span></pre></div>
     <div class="card"><h3>Windows (WSL)</h3><p>In PowerShell as an administrator, install Ubuntu and restart. Then, in Ubuntu:</p><pre><span class="k">wsl --install</span>
-<span class="k">sudo apt install -y git python3</span></pre><p style="margin-top:.7em">If Claude Code runs on Windows (outside WSL), point to its folder in step 2 with <code>--claude-dir /mnt/c/Users/YOUR_USER/.claude/projects</code>.</p></div>
+<span class="k">sudo apt install -y git python3</span></pre><p style="margin-top:.7em">If Claude Code runs on Windows (outside WSL), point to its folder in step 2 with <code>--claude-dir /mnt/c/Users/YOUR_USER/.claude/projects</code>; Codex on Windows goes in with <code>--codex-home /mnt/c/Users/YOUR_USER/.codex</code>. Whatever runs on the Windows side and is not pointed to stays out of the count.</p></div>
   </div>
 </div></section>
 
@@ -200,7 +200,7 @@
 
   <div class="step"><div class="b">2</div><div>
     <h3>First reading: the last 7 days</h3>
-    <p>Shows totals for Claude Code and Codex, the top 10 projects, the top 10 routines, and repeated tasks. A history of several GB takes seconds because the tool reads line by line and skips anything that is not a count.</p>
+    <p>Shows totals for Claude Code and Codex, the top 10 projects, the top 10 routines, and repeated tasks. An 8 GB history takes less than half a minute because the tool reads line by line and skips anything that is not a count.</p>
 <pre><span class="k">python3 medir.py relatorio</span></pre>
     <p>For a different time window, use <code>--dias 14</code>. If you have two Codex accounts, each in its own folder, the tool finds <code>~/.codex</code>, <code>~/.codex-2</code>, and <code>$CODEX_HOME</code>; add another folder with <code>--codex-home</code>.</p>
   </div></div>
@@ -210,7 +210,7 @@
     <p>Searches the last 35 days for the weekly limit message and adds up what you used that week. Check the number and save it.</p>
 <pre><span class="k">python3 medir.py calibrar</span>
 <span class="k">python3 medir.py calibrar --salvar</span></pre>
-    <p>Did it find no cutoff? Enter when it happened, or set a number manually:</p>
+    <p>Did it find no cutoff? Enter when it happened, or set a number manually. The number is in the <b>weight</b> unit, the same one <code>relatorio</code> shows per tool: start from the weight of a week in which you came close to the limit.</p>
 <pre><span class="k">python3 medir.py calibrar --estourou-em "2026-10-26 18:00" --salvar</span>
 <span class="k">python3 medir.py calibrar --ferramenta codex --teto 60000000 --salvar</span></pre>
   </div></div>
@@ -240,15 +240,15 @@
 <section id="exemplos"><div class="wrap">
   <span class="chip">Real example</span>
   <h2>The INEMA machine over 7 days</h2>
-  <p class="sub">Measured on 08/11/2026, with <code>--anonimo</code>. The complete files are in the repository's <code>exemplos/</code> folder.</p>
+  <p class="sub">Measured on 08/11/2026, with <code>--anonimo</code>. The complete files are in the repository's <code>exemplos/</code> folder; the page is <a href="https://inematds.github.io/medidor-de-limite/exemplos/medidor.html" target="_blank" rel="noopener">live here</a>.</p>
   <div class="grid g4" style="margin-bottom:22px">
-    <div class="card"><h3 class="amb" style="font-size:1.6rem">4.2 B</h3><p>tokens processed in Claude Code over 7 days, 96% of them read from cache</p></div>
-    <div class="card"><h3 class="amb" style="font-size:1.6rem">80.6%</h3><p>of the weekly limit used since Monday at 9 p.m.: yellow gauge</p></div>
-    <div class="card"><h3 class="amb" style="font-size:1.6rem">59%</h3><p>of the week's weighted usage came from a single project folder</p></div>
-    <div class="card"><h3 class="amb" style="font-size:1.6rem">701</h3><p>agent runs repeated at the same time, in 91 groups</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">4.3 B</h3><p>tokens processed in Claude Code over 7 days, 96% of them read from cache</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">81.9%</h3><p>of the weekly limit used since Monday at 9 p.m.: yellow gauge</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">60%</h3><p>of the weight over the 7 days came from a single project folder</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">699</h3><p>agent runs repeated at the same time, in 91 groups</p></div>
   </div>
   <div class="ex">
-    <figure><img src="../assets/ex-ponteiro.jpg" alt="Gauge page: Claude Code at 80.6% and Codex with no limit set" loading="lazy"><figcaption>The Claude Code gauge turned yellow. At the pace of the days when the machine was on, the week would end at 102% of the limit.</figcaption></figure>
+    <figure><img src="../assets/ex-ponteiro.jpg" alt="Gauge page: Claude Code at 81.9% and Codex with no limit set" loading="lazy"><figcaption>The Claude Code gauge turned yellow. At the pace of the days when the machine was on, the week would end at 103% of the limit.</figcaption></figure>
     <figure><img src="../assets/ex-celular.jpg" alt="The same page on a mobile phone, with the gauge and bars" loading="lazy"><figcaption>On mobile: the gauge, top 10 folders and routines, and the repeated task table, with no horizontal scrolling.</figcaption></figure>
   </div>
 </div></section>

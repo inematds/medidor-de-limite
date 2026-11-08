@@ -1,9 +1,9 @@
 {
  "versao": "1.0.0",
- "medido_em": "2026-11-08 07:55 -0300",
+ "medido_em": "2026-11-08 08:15 -0300",
  "dias": 7,
- "arquivos": 2357,
- "gb_lidos": 8.03,
+ "arquivos": 2382,
+ "gb_lidos": 8.1,
  "anonimo": true,
  "pesos": {
   "claude": {
@@ -22,41 +22,41 @@
  "ferramentas": {
   "claude": {
    "tokens": {
-    "novos": 46154,
-    "cache_le": 4064526548,
-    "cache_esc": 149844270,
-    "saida": 17510876
+    "novos": 46780,
+    "cache_le": 4124879877,
+    "cache_esc": 151316215,
+    "saida": 17737119
    },
-   "peso": 681358526.2999989,
-   "sessoes": 1055,
-   "headless": 996,
-   "peso_headless": 362237907.09999865,
-   "tokens_total": 4231927848
+   "peso": 690365631.4499989,
+   "sessoes": 1059,
+   "headless": 999,
+   "peso_headless": 363225383.4999987,
+   "tokens_total": 4293979991
   },
   "codex": {
    "tokens": {
-    "novos": 27093372,
-    "cache_le": 158357888,
+    "novos": 27392223,
+    "cache_le": 160934784,
     "cache_esc": 0,
-    "saida": 675494
+    "saida": 685079
    },
-   "peso": 48333112.80000002,
-   "sessoes": 1027,
-   "headless": 1027,
-   "peso_headless": 48333112.80000002,
-   "tokens_total": 186126754
+   "peso": 48966333.40000002,
+   "sessoes": 1039,
+   "headless": 1039,
+   "peso_headless": 48966333.40000002,
+   "tokens_total": 189012086
   }
  },
  "por_dia": [
   {
    "dia": "2026-11-01",
    "claude": {
-    "tokens_total": 305529534,
-    "peso": 51227151.55
+    "tokens_total": 301216457,
+    "peso": 50136245.0
    },
    "codex": {
-    "tokens_total": 20608976,
-    "peso": 5052572.2
+    "tokens_total": 20580706,
+    "peso": 5027330.4
    }
   },
   {
@@ -128,34 +128,34 @@
   {
    "dia": "2026-11-08",
    "claude": {
-    "tokens_total": 120540991,
-    "peso": 33367511.35
+    "tokens_total": 186906211,
+    "peso": 43465523.05
    },
    "codex": {
-    "tokens_total": 6546783,
-    "peso": 1639215.6
+    "tokens_total": 9460385,
+    "peso": 2297678.0
    }
   }
  ],
  "projetos": [
   {
    "rotulo": "privado-4",
-   "peso": 432911380.0000001,
-   "tokens": 3119045433,
-   "sessoes": 108,
+   "peso": 440931008.7500001,
+   "tokens": 3176430257,
+   "sessoes": 109,
    "ferramentas": [
     "claude"
    ],
    "projetos": [
     "privado-4"
    ],
-   "pct": 59.3
+   "pct": 59.6
   },
   {
    "rotulo": "aventurasinemavideo",
-   "peso": 49162087.25000001,
-   "tokens": 329968858,
-   "sessoes": 31,
+   "peso": 49849189.60000001,
+   "tokens": 332911517,
+   "sessoes": 34,
    "ferramentas": [
     "claude"
    ],
@@ -166,8 +166,8 @@
   },
   {
    "rotulo": "explicavideos",
-   "peso": 42687054.650000006,
-   "tokens": 268047042,
+   "peso": 42962887.400000006,
+   "tokens": 269696196,
    "sessoes": 49,
    "ferramentas": [
     "claude"
@@ -175,7 +175,7 @@
    "projetos": [
     "explicavideos"
    ],
-   "pct": 5.9
+   "pct": 5.8
   },
   {
    "rotulo": "eventosextremospub",
@@ -189,7 +189,7 @@
    "projetos": [
     "eventosextremospub"
    ],
-   "pct": 4.2
+   "pct": 4.1
   },
   {
    "rotulo": "privado-13",
@@ -202,13 +202,13 @@
    "projetos": [
     "privado-13"
    ],
-   "pct": 3.5
+   "pct": 3.4
   },
   {
    "rotulo": "privado-2",
-   "peso": 24687900.850000024,
-   "tokens": 131756132,
-   "sessoes": 267,
+   "peso": 24719342.850000024,
+   "tokens": 131914273,
+   "sessoes": 268,
    "ferramentas": [
     "claude",
     "codex"
@@ -216,7 +216,7 @@
    "projetos": [
     "privado-2"
    ],
-   "pct": 3.4
+   "pct": 3.3
   },
   {
    "rotulo": "privado-3",
@@ -229,7 +229,7 @@
    "projetos": [
     "privado-3"
    ],
-   "pct": 3.4
+   "pct": 3.3
   },
   {
    "rotulo": "gitbombando",
@@ -243,7 +243,7 @@
    "projetos": [
     "gitbombando"
    ],
-   "pct": 1.1
+   "pct": 1.0
   },
   {
    "rotulo": "rtex",
@@ -260,9 +260,9 @@
   },
   {
    "rotulo": "(temporária) ",
-   "peso": 7010396.6499999985,
-   "tokens": 22248000,
-   "sessoes": 125,
+   "peso": 7049927.249999998,
+   "tokens": 22468445,
+   "sessoes": 126,
    "ferramentas": [
     "claude",
     "codex"
@@ -276,9 +276,9 @@
  "rotinas": [
   {
    "rotulo": "aventurasinemavideo · Você é o produtor automático da série Memórias de Aventura. Trabalhe sozinho até",
-   "peso": 49162087.25000001,
-   "tokens": 329968858,
-   "sessoes": 31,
+   "peso": 49849189.60000001,
+   "tokens": 332911517,
+   "sessoes": 34,
    "ferramentas": [
     "claude"
    ],
@@ -286,7 +286,7 @@
     "aventurasinemavideo"
    ],
    "pct": 6.7,
-   "por_dia": 4.4
+   "por_dia": 4.9
   },
   {
    "rotulo": "explicavideos · Você é a fase \"visual\" do `/explicavideo` no inemaccbot. O avatar do Nei já foi ",
@@ -313,7 +313,7 @@
    "projetos": [
     "privado-13"
    ],
-   "pct": 3.5,
+   "pct": 3.4,
    "por_dia": 19.4
   },
   {
@@ -341,13 +341,13 @@
    "projetos": [
     "privado-2"
    ],
-   "pct": 1.7,
+   "pct": 1.6,
    "por_dia": 1.0
   },
   {
    "rotulo": "explicavideos · Você é a fase \"ficha\" do `/explicavideo` no inemaccbot. O Nei mandou o pedido ab",
-   "peso": 10377758.399999999,
-   "tokens": 53837937,
+   "peso": 10653591.149999999,
+   "tokens": 55487091,
    "sessoes": 22,
    "ferramentas": [
     "claude"
@@ -427,7 +427,7 @@
    "projetos": [
     "privado-4"
    ],
-   "pct": 7.7
+   "pct": 7.6
   },
   {
    "rotulo": "privado-4 · sessão",
@@ -492,7 +492,20 @@
    "projetos": [
     "privado-4"
    ],
-   "pct": 2.3
+   "pct": 2.2
+  },
+  {
+   "rotulo": "privado-4 · sessão",
+   "peso": 15872269.55,
+   "tokens": 110472350,
+   "sessoes": 1,
+   "ferramentas": [
+    "claude"
+   ],
+   "projetos": [
+    "privado-4"
+   ],
+   "pct": 2.1
   },
   {
    "rotulo": "privado-4 · rotina 9bc0",
@@ -524,19 +537,6 @@
    "rotulo": "privado-4 · rotina c3de",
    "peso": 10407269.15,
    "tokens": 87146559,
-   "sessoes": 1,
-   "ferramentas": [
-    "claude"
-   ],
-   "projetos": [
-    "privado-4"
-   ],
-   "pct": 1.4
-  },
-  {
-   "rotulo": "privado-4 · sessão",
-   "peso": 9966445.5,
-   "tokens": 67826395,
    "sessoes": 1,
    "ferramentas": [
     "claude"
@@ -890,6 +890,23 @@
    "economia_tokens": 4128608
   },
   {
+   "n": 3,
+   "pedido": "Você é a fase \"ficha\" do `/explicavideo` no inemaccbot. O Nei mandou o pedido ab",
+   "projetos": [
+    "explicavideos"
+   ],
+   "ferramenta": "claude",
+   "dia": "2026-11-08",
+   "de": "07:38",
+   "ate": "07:54",
+   "identicos": true,
+   "peso": 1225638.8,
+   "economia": 722830.0,
+   "economia_teto": 756457.7000000001,
+   "tokens": 5589127,
+   "economia_tokens": 3170334
+  },
+  {
    "n": 16,
    "pedido": "Você é o crítico de viralidade do rtex (reel 9:16 do INEMA, avatar real do Nei f",
    "projetos": [
@@ -957,29 +974,6 @@
    "economia_teto": 885454.75,
    "tokens": 2120151,
    "economia_tokens": 1884225
-  },
-  {
-   "n": 12,
-   "pedido": "(pedido de projeto privado)",
-   "projetos": [
-    "privado-7",
-    "privado-14",
-    "privado-6",
-    "privado-1",
-    "privado-12",
-    "privado-5",
-    "privado-11"
-   ],
-   "ferramenta": "claude",
-   "dia": "2026-11-01",
-   "de": "08:00",
-   "ate": "12:16",
-   "identicos": true,
-   "peso": 714566.15,
-   "economia": 570376.95,
-   "economia_teto": 645392.55,
-   "tokens": 678830,
-   "economia_tokens": 560549
   },
   {
    "n": 2,
@@ -1079,42 +1073,42 @@
  ],
  "repetidos_total": {
   "grupos": 91,
-  "execucoes": 701,
-  "economia_peso": 63015078.9,
-  "economia_tokens": 118706314,
+  "execucoes": 699,
+  "economia_peso": 63253204.7,
+  "economia_tokens": 120795796,
   "pct": 8.6,
-  "economia_teto": 78172761.75,
-  "pct_teto": 10.7,
-  "peso": 99198936.5,
-  "pct_peso": 13.6,
+  "economia_teto": 78245635.8,
+  "pct_teto": 10.6,
+  "peso": 99352616.45,
+  "pct_peso": 13.4,
   "janela_min": 60,
   "similaridade": 0.85
  },
  "medidores": {
   "claude": {
-   "media_dia": 97336932.32857127,
-   "projecao_semana": 681358526.2999989,
+   "media_dia": 98623661.63571413,
+   "projecao_semana": 690365631.4499989,
    "teto": 781891364,
-   "pct_projecao": 87.1,
+   "pct_projecao": 88.3,
    "dias_com_uso": 6,
-   "projecao_ritmo": 794918280.683332,
-   "pct_ritmo": 101.7,
+   "projecao_ritmo": 805426570.0249987,
+   "pct_ritmo": 103.0,
    "semana_desde": "2026-11-02 21:00",
-   "usado_semana": 630077831.1,
-   "pct_semana": 80.6,
+   "usado_semana": 640229386.45,
+   "pct_semana": 81.9,
    "cor": "amarelo"
   },
   "codex": {
-   "media_dia": 6904730.400000003,
-   "projecao_semana": 48333112.80000002,
+   "media_dia": 6995190.485714288,
+   "projecao_semana": 48966333.40000002,
    "teto": null,
    "pct_projecao": null,
    "dias_com_uso": 6,
-   "projecao_ritmo": 56388631.600000024,
+   "projecao_ritmo": 57127388.96666669,
    "pct_ritmo": null,
    "cor": "cinza"
   }
  },
  "limites": [],
- "peso_total": 729691639.1
+ "peso_total": 739331964.85
 }
