@@ -1,0 +1,49 @@
+medidor-de-limite 1.0.0 · últimos 7 dias · medido em 2026-11-08 07:55 -0300
+2357 arquivos de sessão lidos (8,03 GB)
+
+CLAUDE  4,2 bi tokens processados · peso 681,4 mi · 1055 sessões (996 robôs/timers)
+        novos 46,2 mil · cache lido 4,1 bi · cache escrito 149,8 mi · saída 17,5 mi
+CODEX   186,1 mi tokens processados · peso 48,3 mi · 1027 sessões (1027 robôs/timers)
+        novos 27,1 mi · cache lido 158,4 mi · cache escrito 0 · saída 675,5 mil
+
+PONTEIRO claude: [AMARELO] semana desde 2026-11-02 21:00: 80.6% do teto (teto 781,9 mi)
+        projeção (média de 7 dias × 7): 87.1% · no ritmo dos 6 dias com uso: 101.7%
+PONTEIRO codex: sem teto definido — rode `python3 medir.py calibrar` (projeção da semana: peso 48,3 mi)
+
+TOP 10 PROJETOS (pasta)                       % do peso   sessões
+  privado-4                                      59.3%     108
+  aventurasinemavideo                             6.7%      31
+  explicavideos                                   5.9%      49
+  eventosextremospub                              4.2%      94
+  privado-13                                      3.5%     136
+  privado-2                                       3.4%     267
+  privado-3                                       3.4%     160
+  gitbombando                                     1.1%      47
+  rtex                                            1.0%      76
+  (temporária)                                    1.0%     125
+
+TOP 10 ROTINAS (claude -p / codex exec, agrupadas pelo 1º pedido)
+    6.7%    31× (4.4/dia)  claude  aventurasinemavideo · Você é o produtor automático da série Memórias de Aventura. Trabalhe
+    3.8%    20× (2.9/dia)  claude  explicavideos · Você é a fase "visual" do `/explicavideo` no inemaccbot. O avatar do Nei j
+    3.5%   136× (19.4/dia)  claude  privado-13 · rotina a42c
+    2.0%    80× (11.4/dia)  claude  privado-3 · rotina 65de
+    1.7%     7× (1.0/dia)  claude  privado-2 · rotina 3f11
+    1.4%    22× (3.1/dia)  claude  explicavideos · Você é a fase "ficha" do `/explicavideo` no inemaccbot. O Nei mandou o ped
+    1.3%    80× (11.4/dia)  claude  privado-3 · rotina 0a8c
+    1.3%     2× (0.3/dia)  claude  privado-4 · rotina 28f5
+    1.2%     9× (1.3/dia)  claude  privado-4 · rotina 62c4
+    1.0%     9× (1.3/dia)  claude  eventosextremospub · Você está rodando sozinho (sem ninguém para responder) a edição diári
+
+REPETIDOS: 91 grupos, 701 execuções com pedido parecido no mesmo dia a menos de 60 min.
+  Esses grupos somam 13.6% do peso. Juntando cada grupo numa execução só: economia de pelo menos 8.6% (118,7 mi tokens); até 10.7% se eram o mesmo trabalho.
+  46× (igual) 2026-11-08 00:10–00:22 claude [privado-13] (pedido de projeto privado)
+  41× (igual) 2026-11-05 00:10–00:22 claude [privado-13] (pedido de projeto privado)
+  33× (igual) 2026-11-06 00:10–00:20 claude [privado-13] (pedido de projeto privado)
+  20× 2026-11-06 00:34–00:47 claude [privado-3] (pedido de projeto privado)
+  20× 2026-11-05 00:34–00:47 claude [privado-3] (pedido de projeto privado)
+  20× 2026-11-07 00:34–00:46 claude [privado-3] (pedido de projeto privado)
+  20× 2026-11-08 00:34–00:47 claude [privado-3] (pedido de projeto privado)
+  20× (igual) 2026-11-07 00:34–00:47 claude [privado-3] (pedido de projeto privado)
+  20× (igual) 2026-11-06 00:34–00:47 claude [privado-3] (pedido de projeto privado)
+  20× (igual) 2026-11-05 00:34–00:47 claude [privado-3] (pedido de projeto privado)
+  Sugestão: ache o timer que dispara isto (`systemctl --user list-timers`, `crontab -l`) e junte ou pause você mesmo. O medidor não mexe em nada.

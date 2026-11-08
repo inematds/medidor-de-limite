@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>medidor-de-limite — adónde va el límite de tu suscripción</title>
+<meta name="description" content="Lee los registros locales de Claude Code y Codex y muestra quién gasta y quién repite: indicador verde, amarillo o rojo, top 10 y tareas repetidas. Solo lectura, sin internet.">
+<link rel="alternate" hreflang="pt-BR" href="https://inematds.github.io/medidor-de-limite/guia/">
+<link rel="alternate" hreflang="en" href="https://inematds.github.io/medidor-de-limite/guia/en/">
+<link rel="alternate" hreflang="es" href="https://inematds.github.io/medidor-de-limite/guia/es/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#FACC15; --amb2:#f0c070; --sky:#38bdf8; --pro:#cbd5e1;
+    color-scheme:dark;
+  }
+  body.light{
+    --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+    --txt:#1a1a22; --mut:#5b5b68; --amb:#a16207; --amb2:#a16207; --sky:#0369a1; --pro:#b45309;
+    color-scheme:light;
+  }
+  body.light .hero .glow{opacity:.5}
+  body.light pre{background:#0e0e14;color:#d6d6e0}
+  body.light pre .c{color:#8a8a98}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.65 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  a{color:var(--amb);text-decoration:none}
+  code,pre{font-family:"JetBrains Mono",monospace}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+  .mut{color:var(--mut)} .amb{color:var(--amb)}
+  .chip{display:inline-block;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600;font-family:Sora}
+  nav{position:sticky;top:0;z-index:30;backdrop-filter:blur(12px);background:rgba(12,12,16,.78);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;gap:22px;height:60px}
+  nav .brand{display:flex;align-items:center;gap:8px;font-family:Sora;font-weight:800;letter-spacing:-.02em;color:var(--amb)}
+  nav .brand .emoji{font-size:1.25rem}
+  nav .sep{color:var(--mut);opacity:.45}
+  nav .inema{color:var(--sky);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .inema:hover{filter:brightness(1.15)}
+  nav .pro{color:var(--pro);font-weight:600;font-size:.88rem;font-family:Sora}
+  nav .pro:hover{filter:brightness(1.15)}
+  nav .clubpro{display:inline-flex;align-items:center;gap:6px}
+  nav .links{margin-left:auto;display:flex;align-items:center;gap:20px;font-size:.92rem}
+  nav .links a.sec{color:var(--mut)} nav .links a.sec:hover{color:var(--txt)}
+  .lang{display:inline-flex;gap:2px;font-family:Sora;font-size:.78rem}
+  .lang a{color:var(--mut);padding:.2em .45em;border-radius:6px} .lang a.on{color:var(--amb);background:rgba(250,204,21,.12)}
+  .tgl{background:var(--bg2);border:1px solid var(--line);color:var(--txt);width:38px;height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:1.05rem}
+  .tgl:hover{border-color:var(--amb)}
+  .btn{display:inline-block;background:var(--amb);color:#1a1206;font-weight:600;padding:.6em 1.05em;border-radius:10px;font-family:Sora}
+  .btn.ghost{background:transparent;color:var(--txt);border:1px solid var(--line)}
+  @media(max-width:760px){nav .links a.sec{display:none}}
+  @media(max-width:520px){nav .wrap{gap:8px;padding:8px 14px;height:auto;flex-wrap:wrap} nav .links{gap:8px;margin-left:0;width:100%;justify-content:space-between} nav .btn{padding:.45em .7em;font-size:.82rem} .tgl{width:34px;height:34px}}
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  .hero .glow{position:absolute;inset:-40% -20% auto auto;width:70%;height:600px;background:radial-gradient(closest-side,rgba(250,204,21,.22),transparent 70%);pointer-events:none}
+  .hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:74px 22px}
+  .hero h1{font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;letter-spacing:-.025em}
+  .hero p.lead{font-size:1.18rem;color:var(--mut);margin:1.1em 0 1.6em;max-width:34ch}
+  .hero .cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero figure{margin:0;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000}
+  .hero figure img{width:100%;height:auto;display:block}
+  .resumo{padding:38px 0 34px;border-bottom:1px solid var(--line)}
+  .resumo p{font-size:1.12rem;line-height:1.7;max-width:74ch;margin:.55em 0 0}
+  @media(max-width:780px){.hero .wrap{grid-template-columns:1fr;padding:48px 22px}}
+  section{padding:62px 0;border-bottom:1px solid var(--line)}
+  section h2{font-size:clamp(1.5rem,3.4vw,2.1rem);font-weight:800;letter-spacing:-.02em}
+  section .sub{color:var(--mut);margin:.6em 0 2em;max-width:62ch}
+  .grid{display:grid;gap:16px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:820px){.g3,.g4{grid-template-columns:1fr 1fr}}
+  @media(max-width:540px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .card h3{font-size:1.05rem;margin-bottom:.4em}
+  .card p{color:var(--mut);font-size:.92rem;margin:0}
+  .num{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:8px;background:rgba(250,204,21,.14);color:var(--amb);font-family:Sora;font-weight:800;font-size:.9rem;margin-bottom:.7em}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+  .flow span{background:var(--bg2);border:1px solid var(--line);border-radius:999px;padding:.45em .9em;font-size:.85rem;font-family:Sora;font-weight:600}
+  .flow .arr{color:var(--amb);border:none;background:none;padding:0 .1em}
+  pre{background:#0a0a0e;border:1px solid var(--line);border-radius:12px;padding:16px 18px;overflow:auto;font-size:.86rem;line-height:1.6;color:#d6d6e0}
+  pre .c{color:#6f6f7c} pre .k{color:var(--amb2)} pre .s{color:#9ece6a}
+  .step{display:grid;grid-template-columns:46px minmax(0,1fr);gap:16px;margin-bottom:26px}
+  .step>div,.card{min-width:0}
+  p code,li code,td code{overflow-wrap:anywhere}
+  .step .b{width:46px;height:46px;border-radius:12px;background:var(--amb);color:#1a1206;font-family:Sora;font-weight:800;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .step h3{font-size:1.12rem;margin-bottom:.3em}
+  .step p{color:var(--mut);margin:.2em 0 .7em}
+  .ex{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:680px){.ex{grid-template-columns:1fr}}
+  .ex figure{margin:0;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+  .ex figure img{width:100%;height:auto;display:block}
+  .ex figcaption{padding:12px 14px;font-size:.88rem;color:var(--mut);background:var(--card)}
+  .phase{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .phase:last-child{border:none}
+  .phase .tag{flex:0 0 92px;font-family:Sora;font-weight:800;color:var(--amb)}
+  .phase .d strong{display:block;margin-bottom:.2em}
+  .phase .d span{color:var(--mut);font-size:.92rem}
+  footer{padding:46px 0;text-align:center;color:var(--mut);font-size:.9rem}
+  .pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:.3em .8em;font-size:.78rem;color:var(--mut);margin:0 4px}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="brand" href="#top"><span class="emoji">⏱️</span> medidor-de-limite</a>
+  <span class="sep">|</span>
+  <span class="clubpro">
+    <a class="inema" href="https://inema.club" target="_blank" rel="noopener">INEMA.CLUB</a>
+    <span class="sep">-</span>
+    <a class="pro" href="https://inema.pro" target="_blank" rel="noopener">PRO</a>
+  </span>
+  <div class="links">
+    <a class="sec" href="#oque">Qué es</a>
+    <a class="sec" href="#fluxo">Cómo funciona</a>
+    <a class="sec" href="#guia">Guía de uso</a>
+    <a class="sec" href="#exemplos">Ejemplo</a>
+    <span class="lang"><a href="../">PT</a><a href="../en/">EN</a><a class="on" href="./">ES</a></span>
+    <button class="tgl" id="themeToggle" aria-label="Cambiar tema" title="Cambiar tema">🌙</button>
+    <a class="btn" href="https://github.com/inematds/medidor-de-limite" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="glow"></div>
+  <div class="wrap">
+    <div>
+      <span class="chip">Claude Code + Codex · solo lectura</span>
+      <h1>¿Se te acabó el límite el miércoles? Mira quién <span class="amb">lo consumió</span>.</h1>
+      <p class="lead">Un indicador verde, amarillo o rojo, los proyectos que más consumen y los robots que repiten el mismo trabajo.</p>
+      <div class="cta">
+        <a class="btn" href="#guia">Empezar la guía</a>
+        <a class="btn ghost" href="https://github.com/inematds/medidor-de-limite" target="_blank" rel="noopener">Ver en GitHub</a>
+      </div>
+    </div>
+    <figure><img src="../assets/banner-es.jpg" alt="Banner: quién consumió tu límite, con un indicador casi en rojo"></figure>
+  </div>
+</header>
+
+<section id="resumo" class="resumo"><div class="wrap">
+  <span class="chip">En resumen</span>
+  <p>medidor-de-limite es un programa pequeño que lee los registros que Claude Code y Codex ya guardan en tu computadora y muestra adónde fue el límite de tu suscripción. Sirve para quienes usan mucho estos asistentes, sobre todo con robots y tareas programadas, y llegan al límite semanal sin saber quién lo consumió. Indica qué proyectos consumen más y qué tareas repetidas se podrían combinar. Solo necesita Python 3: no usa internet ni claves, y no borra ni pausa nada.</p>
+</div></section>
+
+<section id="oque"><div class="wrap">
+  <span class="chip">Qué es</span>
+  <h2>Un indicador para tu suscripción</h2>
+  <p class="sub">El plan dice que tienes un límite semanal, pero no dice cuántos tokens son ni quién los consume. El medidor lo calcula a partir de tus propios registros.</p>
+  <figure style="margin:0 0 26px;border-radius:16px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 80px -30px #000"><img src="../assets/banner-grade-es.jpg" alt="Banner con seis funciones: indicador semanal, proyectos principales, rutinas, tareas repetidas, límite calibrado y todo local" loading="lazy" style="width:100%;display:block"></figure>
+  <div class="grid g3">
+    <div class="card"><h3>⏱️ Indicador semanal</h3><p>Verde por debajo del 70% del límite, amarillo hasta el 90% y rojo por encima. Siempre con la etiqueta escrita, no solo el color.</p></div>
+    <div class="card"><h3>📊 Quién consume</h3><p>Top 10 por carpeta de proyecto, por sesión y por rutina (las tareas de robot agrupadas por el primer pedido).</p></div>
+    <div class="card"><h3>🔁 Quién repite</h3><p>Robots con el mismo pedido que se ejecutan el mismo día con menos de una hora de diferencia: candidatos a convertirse en una sola ejecución.</p></div>
+  </div>
+</div></section>
+
+<section id="fluxo"><div class="wrap">
+  <span class="chip">Cómo funciona</span>
+  <h2>Lee, suma y compara con tu límite</h2>
+  <p class="sub">Todo ocurre en tu computadora. El contenido de las conversaciones nunca aparece: solo números y el comienzo del pedido, con hasta 80 caracteres y sin correo electrónico, enlaces ni rutas de carpetas.</p>
+  <div class="flow">
+    <span>Registros de Claude Code y Codex</span><span class="arr">→</span>
+    <span>Suma por día, proyecto, sesión y rutina</span><span class="arr">→</span>
+    <span>Peso por tipo de token</span><span class="arr">→</span>
+    <span>Límite semanal alcanzado</span><span class="arr">→</span>
+    <span>Indicador + top 10 + tareas repetidas</span>
+  </div>
+  <div class="grid g2" style="margin-top:26px">
+    <div class="card"><h3>Tokens procesados y peso</h3><p>Casi todo lo que pasa por el modelo es caché leída, que cuesta poco. Por eso el indicador usa el <b>peso</b>: cada tipo de token cuenta en proporción al precio público (Claude: nuevo 1, caché escrita 1,25, caché leída 0,1, salida 5). El informe muestra ambos números.</p></div>
+    <div class="card"><h3>Tú calibras el límite</h3><p>El plan no publica el límite en tokens. Cuando se alcanza el límite, Claude Code guarda "You've hit your weekly limit" en el registro. El comando <code>calibrar</code> encuentra ese mensaje y suma lo que gastaste esa semana: ese es tu límite. El uso en el sitio web, la app o en otra computadora no aparece aquí.</p></div>
+  </div>
+</div></section>
+
+<section id="pre"><div class="wrap">
+  <span class="chip">Requisitos</span>
+  <h2>Python 3 y el historial de tus sesiones</h2>
+  <p class="sub">Funciona donde Claude Code o Codex ya se ejecutan y guardan registros (<code>~/.claude/projects</code> y <code>~/.codex/sessions</code>). Elige tu sistema y pega los comandos, uno a la vez.</p>
+  <div class="grid g3">
+    <div class="card"><h3>Linux (Ubuntu, Debian)</h3><p>Python 3 ya viene instalado. Si falta git:</p><pre><span class="k">sudo apt install -y git python3</span>
+<span class="k">python3 --version</span></pre></div>
+    <div class="card"><h3>Mac</h3><p>El primer comando instala las herramientas de Apple, que incluyen git y Python 3.</p><pre><span class="k">xcode-select --install</span>
+<span class="k">python3 --version</span></pre></div>
+    <div class="card"><h3>Windows (WSL)</h3><p>En PowerShell como administrador, instala Ubuntu y reinicia. Después, en Ubuntu:</p><pre><span class="k">wsl --install</span>
+<span class="k">sudo apt install -y git python3</span></pre><p style="margin-top:.7em">Si Claude Code se ejecuta en Windows (fuera de WSL), indica su carpeta en el paso 2 con <code>--claude-dir /mnt/c/Users/TU_USUARIO/.claude/projects</code>.</p></div>
+  </div>
+</div></section>
+
+<section id="guia"><div class="wrap">
+  <span class="chip">Guía de uso · paso a paso</span>
+  <h2>Del inicio al indicador en 5 minutos</h2>
+  <p class="sub">Los comandos son los mismos en Linux, Mac y Ubuntu de WSL.</p>
+
+  <div class="step"><div class="b">1</div><div>
+    <h3>Descarga el medidor</h3>
+    <p>Es una carpeta con un archivo Python y la página del indicador. No instala nada en el sistema.</p>
+<pre><span class="k">git clone https://github.com/inematds/medidor-de-limite.git</span>
+<span class="k">cd medidor-de-limite</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">2</div><div>
+    <h3>Primera lectura: los últimos 7 días</h3>
+    <p>Muestra los totales de Claude Code y Codex, el top 10 de proyectos, el top 10 de rutinas y las tareas repetidas. El historial de varios GB se procesa en segundos porque se lee línea por línea y se omite lo que no es un conteo.</p>
+<pre><span class="k">python3 medir.py relatorio</span></pre>
+    <p>Para otro período, usa <code>--dias 14</code>. Si tienes dos cuentas de Codex, cada una en una carpeta, encuentra <code>~/.codex</code>, <code>~/.codex-2</code> y <code>$CODEX_HOME</code>; puedes agregar otra carpeta con <code>--codex-home</code>.</p>
+  </div></div>
+
+  <div class="step"><div class="b">3</div><div>
+    <h3>Encuentra tu límite de la semana en que se alcanzó</h3>
+    <p>Busca el mensaje de límite semanal de los últimos 35 días y suma lo que se gastó esa semana. Revisa el número y guárdalo.</p>
+<pre><span class="k">python3 medir.py calibrar</span>
+<span class="k">python3 medir.py calibrar --salvar</span></pre>
+    <p>¿No encontró ningún corte? Indica cuándo ocurrió o escribe un número manualmente:</p>
+<pre><span class="k">python3 medir.py calibrar --estourou-em "2026-10-26 18:00" --salvar</span>
+<span class="k">python3 medir.py calibrar --ferramenta codex --teto 60000000 --salvar</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">4</div><div>
+    <h3>Abre el indicador</h3>
+    <p>Genera una página con el indicador animado, las barras por proyecto y rutina, el gráfico día a día y la tabla de tareas repetidas. Funciona en el celular.</p>
+<pre><span class="k">python3 medir.py html --saida medidor.html</span>
+<span class="k">xdg-open medidor.html</span></pre>
+    <p>En Mac, cambia <code>xdg-open</code> por <code>open</code>. En WSL, usa <code>explorer.exe medidor.html</code>.</p>
+  </div></div>
+
+  <div class="step"><div class="b">5</div><div>
+    <h3>Combina o pausa las tareas repetidas tú mismo</h3>
+    <p>El medidor solo sugiere. Busca el temporizador o la tarea programada que activa la rutina repetida y decide si la combinas en una sola ejecución.</p>
+<pre><span class="k">systemctl --user list-timers</span>
+<span class="k">crontab -l</span></pre>
+  </div></div>
+
+  <div class="step"><div class="b">6</div><div>
+    <h3>Comparte sin exponer tus proyectos</h3>
+    <p>Con <code>--anonimo</code>, las carpetas cuyos nombres no están en una lista pública se convierten en <code>privado-1</code>, <code>privado-2</code>… y sus pedidos desaparecen. La lista es un archivo de texto con un nombre por línea.</p>
+<pre><span class="k">python3 medir.py html --anonimo --publicos publicos.txt --saida medidor.html</span></pre>
+  </div></div>
+</div></section>
+
+<section id="exemplos"><div class="wrap">
+  <span class="chip">Ejemplo real</span>
+  <h2>La computadora del INEMA en 7 días</h2>
+  <p class="sub">Medido el 08/11/2026, con <code>--anonimo</code>. Los archivos completos están en la carpeta <code>exemplos/</code> del repositorio.</p>
+  <div class="grid g4" style="margin-bottom:22px">
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">4,2 mil millones</h3><p>tokens procesados en Claude Code en 7 días; el 96% eran caché leída</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">80,6%</h3><p>del límite semanal usado desde el lunes a las 21 h: indicador amarillo</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">59%</h3><p>del peso de la semana provino de una sola carpeta de proyecto</p></div>
+    <div class="card"><h3 class="amb" style="font-size:1.6rem">701</h3><p>ejecuciones de robot repetidas en el mismo horario, en 91 grupos</p></div>
+  </div>
+  <div class="ex">
+    <figure><img src="../assets/ex-ponteiro.jpg" alt="Página del medidor: indicador de Claude Code en 80,6% y de Codex sin límite configurado" loading="lazy"><figcaption>El indicador de Claude Code quedó amarillo. Al ritmo de los días en que la computadora estuvo encendida, la semana terminaría en el 102% del límite.</figcaption></figure>
+    <figure><img src="../assets/ex-celular.jpg" alt="La misma página en el celular, con indicador y barras" loading="lazy"><figcaption>En el celular: indicador, top 10 de carpetas y rutinas, y la tabla de tareas repetidas, sin desplazarse hacia los lados.</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="roadmap"><div class="wrap">
+  <span class="chip">Límites claros</span>
+  <h2>Lo que el medidor no sabe</h2>
+  <p class="sub">Conviene saberlo antes de confiar en el indicador.</p>
+  <div class="phase"><div class="tag">Límite</div><div class="d"><strong>Es una estimación tuya, no una cifra oficial</strong><span>Proviene de la semana en que se alcanzó el límite. Si tu forma de uso cambia mucho, vuelve a calibrarlo.</span></div></div>
+  <div class="phase"><div class="tag">Otros lugares</div><div class="d"><strong>El sitio web, la app y otras computadoras no aparecen</strong><span>Consumen del mismo límite, pero los registros están en otro lugar.</span></div></div>
+  <div class="phase"><div class="tag">Codex</div><div class="d"><strong>Casi nunca queda registrado cuándo se alcanza el límite</strong><span>El límite de Codex suele ingresarse manualmente (<code>--teto</code>).</span></div></div>
+  <div class="phase"><div class="tag">Repeticiones</div><div class="d"><strong>Un pedido parecido no siempre es trabajo duplicado</strong><span>Un lote de 40 resúmenes con la misma plantilla aparece como un grupo. Por eso el ahorro que se muestra es "al menos" el costo fijo de cada ejecución extra y "hasta" el total si se trata del mismo trabajo.</span></div></div>
+</div></section>
+
+<footer>
+  <div class="wrap">
+    <div class="pill">Python 3 (solo biblioteca estándar)</div><div class="pill">Claude Code</div><div class="pill">Codex</div><div class="pill">Sin internet</div>
+    <p style="margin-top:18px">medidor-de-limite · abierto y gratuito, licencia MIT ·
+      <a href="https://github.com/inematds/medidor-de-limite">inematds/medidor-de-limite</a> ·
+      <a href="https://inema.club">INEMA.CLUB</a></p>
+  </div>
+</footer>
+
+<script>
+  (function(){
+    var KEY='medidor-de-limite-theme';
+    var b=document.body, t=document.getElementById('themeToggle');
+    if(localStorage.getItem(KEY)==='light'){ b.classList.add('light'); t.textContent='☀️'; }
+    t.addEventListener('click',function(){
+      var light=b.classList.toggle('light');
+      t.textContent=light?'☀️':'🌙';
+      localStorage.setItem(KEY, light?'light':'dark');
+    });
+  })();
+</script>
+</body>
+</html>

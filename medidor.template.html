@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medidor de limite</title>
+<meta name="description" content="Para onde vai o limite da sua assinatura: quem gasta e quem repete, lido dos registros locais do Claude Code e do Codex.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#FACC15; --ok:#4ade80; --warn:#FACC15; --bad:#f87171; --sky:#38bdf8;
+    --cx:#a78bfa;
+    color-scheme:dark;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+      --txt:#1a1a22; --mut:#5b5b68; --amb:#a16207; --ok:#15803d; --warn:#a16207; --bad:#b91c1c; --sky:#0369a1;
+      --cx:#6d28d9; color-scheme:light;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 16px}
+  header{border-bottom:1px solid var(--line);padding:28px 0 22px}
+  .chip{font-family:Sora;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600}
+  h1{font-size:clamp(1.7rem,4.5vw,2.6rem);font-weight:800;letter-spacing:-.02em;margin-top:6px}
+  .mut{color:var(--mut)}
+  .sub{color:var(--mut);margin:.4em 0 0;font-size:.95rem}
+  section{padding:26px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:1.3rem;margin-bottom:14px}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+  .card h3{font-size:1rem;margin-bottom:6px}
+  .gauge{width:100%;max-width:340px;display:block;margin:0 auto}
+  .gauge text{font-family:Sora;fill:var(--txt)}
+  .needle{transform-origin:150px 150px;transition:transform 1.6s cubic-bezier(.2,.9,.2,1)}
+  .estado{display:inline-block;font-family:Sora;font-weight:800;font-size:.8rem;letter-spacing:.12em;padding:.25em .7em;border-radius:999px;border:1px solid currentColor}
+  .estado.verde{color:var(--ok)} .estado.amarelo{color:var(--warn)} .estado.vermelho{color:var(--bad)} .estado.cinza{color:var(--mut)}
+  .big{font-family:Sora;font-weight:800;font-size:2rem;letter-spacing:-.02em}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:.92rem}
+  .kv dt{color:var(--mut)} .kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+  .bars{display:flex;flex-direction:column;gap:10px}
+  .bar{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:.92rem}
+  .bar .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .bar .pc{font-variant-numeric:tabular-nums;font-family:Sora;font-weight:600}
+  .bar .tr{grid-column:1/-1;height:10px;background:var(--bg2);border-radius:999px;overflow:hidden}
+  .bar .tr i{display:block;height:100%;background:var(--amb);border-radius:999px;width:0;transition:width 1.2s ease}
+  .bar .tr i.cx{background:var(--cx)}
+  .bar .meta{grid-column:1/-1;color:var(--mut);font-size:.82rem}
+  .dias{display:flex;gap:6px;align-items:flex-end;height:150px;padding-top:10px}
+  .dia{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;height:100%;justify-content:flex-end}
+  .dia .col{width:100%;max-width:46px;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden}
+  .dia .col i{display:block;background:var(--amb)} .dia .col i.cx{background:var(--cx)}
+  .dia small{font-size:.75rem;color:var(--mut)}
+  .leg{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--mut);margin-top:8px}
+  .leg b{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--amb);vertical-align:-1px;margin-right:6px}
+  .leg b.cx{background:var(--cx)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:500;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tw{overflow-x:auto}
+  .rep td:nth-child(3){word-break:break-word}
+  .aviso{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--amb);border-radius:10px;padding:12px 14px;font-size:.92rem}
+  .alerta{border-left-color:var(--bad)}
+  footer{padding:24px 0 40px;color:var(--mut);font-size:.85rem}
+  footer a{color:var(--sky)}
+  @media(max-width:520px){ .big{font-size:1.6rem} table{font-size:.85rem} th:nth-child(4),td:nth-child(4){display:none} }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="chip">medidor-de-limite</div>
+  <h1>Para onde vai o seu limite</h1>
+  <p class="sub" id="cab"></p>
+</div></header>
+
+<main class="wrap">
+  <section>
+    <h2>Ponteiro da semana</h2>
+    <div class="grid" id="medidores"></div>
+    <p class="aviso" id="avisos" style="margin-top:16px"></p>
+  </section>
+
+  <section>
+    <h2>Quem gastou (por projeto)</h2>
+    <div class="grid">
+      <div class="card"><h3>Top 10 pastas</h3><div class="bars" id="projetos"></div></div>
+      <div class="card"><h3>Top 10 rotinas (robôs e timers)</h3><div class="bars" id="rotinas"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Dia a dia</h2>
+    <div class="card"><div class="dias" id="dias"></div>
+      <div class="leg"><span><b></b>Claude Code</span><span><b class="cx"></b>Codex</span><span>altura = peso do dia</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Quem repete</h2>
+    <p class="aviso" id="reptot"></p>
+    <div class="tw" style="margin-top:12px"><table class="rep">
+      <thead><tr><th>Vezes</th><th>Quando</th><th>Pedido (início)</th><th>Pasta</th><th>Economia</th></tr></thead>
+      <tbody id="repetidos"></tbody>
+    </table></div>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  Só leitura: o medidor não pausa, não apaga e não envia nada. Gerado pelo <code>medir.py html</code>.
+  · <a href="https://inema.club">INEMA.CLUB</a>
+</div></footer>
+
+<script>
+const D = /*__DADOS__*/null;
+const fmt = n => { n = +n || 0; for (const [l,s] of [[1e9,' bi'],[1e6,' mi'],[1e3,' mil']]) if (Math.abs(n) >= l) return (n/l).toFixed(1).replace('.',',')+s; return Math.round(n)+''; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const NOME = {claude:'Claude Code', codex:'Codex'};
+const ROT = {verde:'VERDE · folga', amarelo:'AMARELO · atenção', vermelho:'VERMELHO · vai estourar', cinza:'SEM TETO'};
+
+document.getElementById('cab').textContent =
+  `Últimos ${D.dias} dias · medido em ${D.medido_em} · ${D.arquivos} arquivos de sessão (${String(D.gb_lidos).replace('.',',')} GB)` + (D.anonimo ? ' · nomes privados ocultos' : '');
+
+function arco(a0, a1, r){ const p = a => [150 + r*Math.cos(Math.PI*(1-a)), 150 - r*Math.sin(Math.PI*(1-a))];
+  const [x0,y0] = p(a0), [x1,y1] = p(a1); return `M${x0},${y0} A${r},${r} 0 0 1 ${x1},${y1}`; }
+
+const med = document.getElementById('medidores');
+for (const [ferr, m] of Object.entries(D.medidores)) {
+  const f = D.ferramentas[ferr];
+  const pct = m.pct_semana ?? m.pct_projecao;
+  const vis = pct == null ? 0 : Math.min(pct, 120) / 120;
+  const base = m.pct_semana != null ? `usado desde ${m.semana_desde}` : (m.teto ? 'projeção da semana' : 'sem teto: rode calibrar');
+  med.insertAdjacentHTML('beforeend', `<div class="card">
+    <h3>${NOME[ferr]||ferr}</h3>
+    <svg class="gauge" viewBox="0 -8 300 183" role="img" aria-label="${esc(NOME[ferr])}: ${pct ?? 'sem teto'}% do teto">
+      <path d="${arco(0, 70/120, 120)}" stroke="var(--ok)" stroke-width="22" fill="none"/>
+      <path d="${arco(70/120, 90/120, 120)}" stroke="var(--warn)" stroke-width="22" fill="none"/>
+      <path d="${arco(90/120, 1, 120)}" stroke="var(--bad)" stroke-width="22" fill="none"/>
+      <line x1="${150+108*Math.cos(Math.PI/6)}" y1="${150-108*Math.sin(Math.PI/6)}" x2="${150+136*Math.cos(Math.PI/6)}" y2="${150-136*Math.sin(Math.PI/6)}" stroke="var(--txt)" stroke-width="2"/>
+      <text x="${150+146*Math.cos(Math.PI/6)+4}" y="${150-146*Math.sin(Math.PI/6)-6}" text-anchor="middle" font-size="11" fill="var(--mut)">teto</text>
+      <text x="22" y="170" text-anchor="middle" font-size="11" fill="var(--mut)">0</text>
+      <g class="needle" data-a="${-90 + 180*vis}" style="transform:rotate(-90deg)">
+        <line x1="150" y1="150" x2="150" y2="44" stroke="var(--txt)" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <circle cx="150" cy="150" r="9" fill="var(--txt)"/>
+      <text x="150" y="128" text-anchor="middle" font-size="26" font-weight="800">${pct == null ? '—' : String(pct).replace('.',',')+'%'}</text>
+    </svg>
+    <p style="text-align:center;margin:.2em 0 .8em"><span class="estado ${m.cor}">${ROT[m.cor]}</span><br><span class="mut" style="font-size:.85rem">${esc(base)}</span></p>
+    <dl class="kv">
+      <dt>Tokens processados</dt><dd>${fmt(f.tokens_total)}</dd>
+      <dt>· cache lido</dt><dd>${fmt(f.tokens.cache_le)}</dd>
+      <dt>· cache escrito</dt><dd>${fmt(f.tokens.cache_esc)}</dd>
+      <dt>· novos + saída</dt><dd>${fmt(f.tokens.novos + f.tokens.saida)}</dd>
+      <dt>Peso (unidade do teto)</dt><dd>${fmt(f.peso)}</dd>
+      <dt>Teto semanal</dt><dd>${m.teto ? fmt(m.teto) : '—'}</dd>
+      <dt>Projeção (média × 7)</dt><dd>${m.pct_projecao != null ? String(m.pct_projecao).replace('.',',')+'%' : fmt(m.projecao_semana)}</dd>
+      <dt>No ritmo dos ${m.dias_com_uso} dias com uso</dt><dd>${m.pct_ritmo != null ? String(m.pct_ritmo).replace('.',',')+'%' : fmt(m.projecao_ritmo)}</dd>
+      <dt>Sessões (robôs/timers)</dt><dd>${f.sessoes} (${f.headless})</dd>
+    </dl></div>`);
+}
+const av = [];
+for (const l of D.limites) av.push(`${NOME[l.ferramenta]||l.ferramenta} bateu o limite <b>${l.tipo === 'weekly' ? 'semanal' : l.tipo === 'session' ? 'de sessão (5 h)' : ''}</b> em ${l.horas_distintas} horas diferentes (último: ${esc(l.ultimo)}).`);
+av.push('O plano não publica o limite em tokens. O teto é o que você gastou na semana em que o limite cortou (<code>medir.py calibrar</code>). Uso no site, no app ou em outra máquina não aparece aqui.');
+const avEl = document.getElementById('avisos'); avEl.innerHTML = av.join('<br>'); if (D.limites.length) avEl.classList.add('alerta');
+
+function barras(id, itens, cx){
+  const el = document.getElementById(id), max = Math.max(...itens.map(i => i.pct), 1);
+  el.innerHTML = itens.map(i => `<div class="bar"><span class="nm" title="${esc(i.rotulo)}">${esc(i.rotulo)}</span><span class="pc">${String(i.pct).replace('.',',')}%</span>
+    <span class="tr"><i class="${cx && i.ferramentas.join()==='codex' ? 'cx':''}" data-w="${100*i.pct/max}"></i></span>
+    <span class="meta">${i.sessoes} sessões${i.por_dia != null ? ` · ${String(i.por_dia).replace('.',',')}/dia` : ''} · ${fmt(i.tokens)} tokens · ${i.ferramentas.map(f=>NOME[f]).join(' + ')}</span></div>`).join('') || '<p class="mut">Nada na janela.</p>';
+}
+barras('projetos', D.projetos, false);
+barras('rotinas', D.rotinas, true);
+
+const dias = document.getElementById('dias');
+const mx = Math.max(...D.por_dia.map(d => d.claude.peso + d.codex.peso), 1);
+dias.innerHTML = D.por_dia.map(d => `<div class="dia" title="${d.dia}: Claude ${fmt(d.claude.peso)} · Codex ${fmt(d.codex.peso)}">
+  <div class="col" style="height:${Math.max(2, 100*(d.claude.peso+d.codex.peso)/mx)}%"><i style="flex:${d.claude.peso}"></i><i class="cx" style="flex:${d.codex.peso}"></i></div>
+  <small>${d.dia.slice(8)}/${d.dia.slice(5,7)}</small></div>`).join('');
+
+const rt = D.repetidos_total;
+document.getElementById('reptot').innerHTML = `<b>${rt.grupos} grupos</b> com ${rt.execucoes} execuções de pedido parecido no mesmo dia, a menos de ${rt.janela_min} min uma da outra (${String(rt.pct_peso).replace('.',',')}% do peso).
+  Juntando cada grupo numa execução só: economia de <b>pelo menos ${String(rt.pct).replace('.',',')}%</b> (${fmt(rt.economia_tokens)} tokens), até ${String(rt.pct_teto).replace('.',',')}% se eram o mesmo trabalho.
+  O medidor só sugere: ache o timer (<code>systemctl --user list-timers</code>) e decida você.`;
+document.getElementById('repetidos').innerHTML = D.repetidos.slice(0, 15).map(r => `<tr>
+  <td class="n">${r.n}×${r.identicos ? ' <span class="mut">igual</span>' : ''}</td><td>${r.dia.slice(8)}/${r.dia.slice(5,7)} ${r.de}–${r.ate}</td>
+  <td>${esc(r.pedido)}</td><td>${esc(r.projetos.join(', '))}</td><td class="n">${fmt(r.economia_tokens)}</td></tr>`).join('');
+
+requestAnimationFrame(() => setTimeout(() => {
+  document.querySelectorAll('.needle').forEach(n => n.style.transform = `rotate(${n.dataset.a}deg)`);
+  document.querySelectorAll('.tr i').forEach(i => i.style.width = i.dataset.w + '%');
+}, 80));
+</script>
+</body>
+</html>

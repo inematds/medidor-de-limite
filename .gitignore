@@ -1,0 +1,6 @@
+__pycache__/
+.pytest_cache/
+logs-guia/
+guia/assets/*.codex.log
+medidor.html
+*.pyc
