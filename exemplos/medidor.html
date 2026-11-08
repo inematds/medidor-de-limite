@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medidor de limite</title>
+<meta name="description" content="Para onde vai o limite da sua assinatura: quem gasta e quem repete, lido dos registros locais do Claude Code e do Codex.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0c10; --bg2:#14141b; --card:#16161e; --line:#272730;
+    --txt:#e9e9ee; --mut:#9a9aa6; --amb:#FACC15; --ok:#4ade80; --warn:#FACC15; --bad:#f87171; --sky:#38bdf8;
+    --cx:#a78bfa;
+    color-scheme:dark;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f6f7f9; --bg2:#eceef2; --card:#ffffff; --line:#e1e3ea;
+      --txt:#1a1a22; --mut:#5b5b68; --amb:#a16207; --ok:#15803d; --warn:#a16207; --bad:#b91c1c; --sky:#0369a1;
+      --cx:#6d28d9; color-scheme:light;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.6 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  h1,h2,h3{font-family:Sora,sans-serif;line-height:1.15;margin:0}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 16px}
+  header{border-bottom:1px solid var(--line);padding:28px 0 22px}
+  .chip{font-family:Sora;font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--amb);font-weight:600}
+  h1{font-size:clamp(1.7rem,4.5vw,2.6rem);font-weight:800;letter-spacing:-.02em;margin-top:6px}
+  .mut{color:var(--mut)}
+  .sub{color:var(--mut);margin:.4em 0 0;font-size:.95rem}
+  section{padding:26px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:1.3rem;margin-bottom:14px}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+  .card h3{font-size:1rem;margin-bottom:6px}
+  .gauge{width:100%;max-width:340px;display:block;margin:0 auto}
+  .gauge text{font-family:Sora;fill:var(--txt)}
+  .needle{transform-origin:150px 150px;transition:transform 1.6s cubic-bezier(.2,.9,.2,1)}
+  .estado{display:inline-block;font-family:Sora;font-weight:800;font-size:.8rem;letter-spacing:.12em;padding:.25em .7em;border-radius:999px;border:1px solid currentColor}
+  .estado.verde{color:var(--ok)} .estado.amarelo{color:var(--warn)} .estado.vermelho{color:var(--bad)} .estado.cinza{color:var(--mut)}
+  .big{font-family:Sora;font-weight:800;font-size:2rem;letter-spacing:-.02em}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:.92rem}
+  .kv dt{color:var(--mut)} .kv dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+  .bars{display:flex;flex-direction:column;gap:10px}
+  .bar{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:.92rem}
+  .bar .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .bar .pc{font-variant-numeric:tabular-nums;font-family:Sora;font-weight:600}
+  .bar .tr{grid-column:1/-1;height:10px;background:var(--bg2);border-radius:999px;overflow:hidden}
+  .bar .tr i{display:block;height:100%;background:var(--amb);border-radius:999px;width:0;transition:width 1.2s ease}
+  .bar .tr i.cx{background:var(--cx)}
+  .bar .meta{grid-column:1/-1;color:var(--mut);font-size:.82rem}
+  .dias{display:flex;gap:6px;align-items:flex-end;height:150px;padding-top:10px}
+  .dia{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;height:100%;justify-content:flex-end}
+  .dia .col{width:100%;max-width:46px;display:flex;flex-direction:column-reverse;border-radius:6px 6px 0 0;overflow:hidden}
+  .dia .col i{display:block;background:var(--amb)} .dia .col i.cx{background:var(--cx)}
+  .dia small{font-size:.75rem;color:var(--mut)}
+  .leg{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--mut);margin-top:8px}
+  .leg b{display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--amb);vertical-align:-1px;margin-right:6px}
+  .leg b.cx{background:var(--cx)}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--mut);font-weight:500;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+  td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tw{overflow-x:auto}
+  .rep td:nth-child(3){word-break:break-word}
+  .aviso{background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--amb);border-radius:10px;padding:12px 14px;font-size:.92rem}
+  .alerta{border-left-color:var(--bad)}
+  footer{padding:24px 0 40px;color:var(--mut);font-size:.85rem}
+  footer a{color:var(--sky)}
+  @media(max-width:520px){ .big{font-size:1.6rem} table{font-size:.85rem} th:nth-child(4),td:nth-child(4){display:none} }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="chip">medidor-de-limite</div>
+  <h1>Para onde vai o seu limite</h1>
+  <p class="sub" id="cab"></p>
+</div></header>
+
+<main class="wrap">
+  <section>
+    <h2>Ponteiro da semana</h2>
+    <div class="grid" id="medidores"></div>
+    <p class="aviso" id="avisos" style="margin-top:16px"></p>
+  </section>
+
+  <section>
+    <h2>Quem gastou (por projeto)</h2>
+    <div class="grid">
+      <div class="card"><h3>Top 10 pastas</h3><div class="bars" id="projetos"></div></div>
+      <div class="card"><h3>Top 10 rotinas (robôs e timers)</h3><div class="bars" id="rotinas"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Dia a dia</h2>
+    <div class="card"><div class="dias" id="dias"></div>
+      <div class="leg"><span><b></b>Claude Code</span><span><b class="cx"></b>Codex</span><span>altura = peso do dia</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Quem repete</h2>
+    <p class="aviso" id="reptot"></p>
+    <div class="tw" style="margin-top:12px"><table class="rep">
+      <thead><tr><th>Vezes</th><th>Quando</th><th>Pedido (início)</th><th>Pasta</th><th>Economia</th></tr></thead>
+      <tbody id="repetidos"></tbody>
+    </table></div>
+  </section>
+</main>
+
+<footer><div class="wrap">
+  Só leitura: o medidor não pausa, não apaga e não envia nada. Gerado pelo <code>medir.py html</code>.
+  · <a href="https://inema.club">INEMA.CLUB</a>
+</div></footer>
+
+<script>
+const D = {"versao": "1.0.0", "medido_em": "2026-11-08 07:55 -0300", "dias": 7, "arquivos": 2358, "gb_lidos": 8.02, "anonimo": true, "pesos": {"claude": {"novos": 1.0, "cache_esc": 1.25, "cache_le": 0.1, "saida": 5.0}, "codex": {"novos": 1.0, "cache_esc": 1.0, "cache_le": 0.1, "saida": 8.0}}, "ferramentas": {"claude": {"tokens": {"novos": 46168, "cache_le": 4065784942, "cache_esc": 149847117, "saida": 17514452}, "peso": 681505818.4499989, "sessoes": 1055, "headless": 996, "peso_headless": 362237907.09999865, "tokens_total": 4233192679}, "codex": {"tokens": {"novos": 27123122, "cache_le": 158458240, "cache_esc": 0, "saida": 676593}, "peso": 48381690.000000015, "sessoes": 1029, "headless": 1029, "peso_headless": 48381690.000000015, "tokens_total": 186257955}}, "por_dia": [{"dia": "2026-11-01", "claude": {"tokens_total": 305529534, "peso": 51227151.55}, "codex": {"tokens_total": 20608976, "peso": 5052572.2}}, {"dia": "2026-11-02", "claude": {"tokens_total": 0, "peso": 0.0}, "codex": {"tokens_total": 0, "peso": 0.0}}, {"dia": "2026-11-03", "claude": {"tokens_total": 0, "peso": 0.0}, "codex": {"tokens_total": 0, "peso": 0.0}}, {"dia": "2026-11-04", "claude": {"tokens_total": 748536010, "peso": 114491659.25}, "codex": {"tokens_total": 32213647, "peso": 7874414.4}}, {"dia": "2026-11-05", "claude": {"tokens_total": 745138477, "peso": 127084143.05}, "codex": {"tokens_total": 41552324, "peso": 10808446.8}}, {"dia": "2026-11-06", "claude": {"tokens_total": 829215474, "peso": 132770765.8}, "codex": {"tokens_total": 24231465, "peso": 7088687.0}}, {"dia": "2026-11-07", "claude": {"tokens_total": 1482967362, "peso": 222417295.3}, "codex": {"tokens_total": 60973559, "peso": 15869776.8}}, {"dia": "2026-11-08", "claude": {"tokens_total": 121805822, "peso": 33514803.5}, "codex": {"tokens_total": 6677984, "peso": 1687792.8}}], "projetos": [{"rotulo": "privado-4", "peso": 433058672.1500001, "tokens": 3120310264, "sessoes": 108, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 59.3}, {"rotulo": "aventurasinemavideo", "peso": 49162087.25000001, "tokens": 329968858, "sessoes": 31, "ferramentas": ["claude"], "projetos": ["aventurasinemavideo"], "pct": 6.7}, {"rotulo": "explicavideos", "peso": 42687054.650000006, "tokens": 268047042, "sessoes": 49, "ferramentas": ["claude"], "projetos": ["explicavideos"], "pct": 5.8}, {"rotulo": "eventosextremospub", "peso": 30284890.149999995, "tokens": 177203411, "sessoes": 94, "ferramentas": ["claude", "codex"], "projetos": ["eventosextremospub"], "pct": 4.1}, {"rotulo": "privado-13", "peso": 25336332.449999943, "tokens": 21257200, "sessoes": 136, "ferramentas": ["claude"], "projetos": ["privado-13"], "pct": 3.5}, {"rotulo": "privado-2", "peso": 24687900.850000024, "tokens": 131756132, "sessoes": 267, "ferramentas": ["claude", "codex"], "projetos": ["privado-2"], "pct": 3.4}, {"rotulo": "privado-3", "peso": 24521509.600000065, "tokens": 20628558, "sessoes": 160, "ferramentas": ["claude"], "projetos": ["privado-3"], "pct": 3.4}, {"rotulo": "gitbombando", "peso": 7714487.149999998, "tokens": 31784252, "sessoes": 47, "ferramentas": ["claude", "codex"], "projetos": ["gitbombando"], "pct": 1.1}, {"rotulo": "rtex", "peso": 7551046.150000003, "tokens": 23304867, "sessoes": 76, "ferramentas": ["claude"], "projetos": ["rtex"], "pct": 1.0}, {"rotulo": "(temporária) ", "peso": 7010396.6499999985, "tokens": 22248000, "sessoes": 125, "ferramentas": ["claude", "codex"], "projetos": ["(temporária) "], "pct": 1.0}], "rotinas": [{"rotulo": "aventurasinemavideo · Você é o produtor automático da série Memórias de Aventura. Trabalhe sozinho até", "peso": 49162087.25000001, "tokens": 329968858, "sessoes": 31, "ferramentas": ["claude"], "projetos": ["aventurasinemavideo"], "pct": 6.7, "por_dia": 4.4}, {"rotulo": "explicavideos · Você é a fase \"visual\" do `/explicavideo` no inemaccbot. O avatar do Nei já foi ", "peso": 27956079.3, "tokens": 185921873, "sessoes": 20, "ferramentas": ["claude"], "projetos": ["explicavideos"], "pct": 3.8, "por_dia": 2.9}, {"rotulo": "privado-13 · rotina a42c", "peso": 25336332.449999943, "tokens": 21257200, "sessoes": 136, "ferramentas": ["claude"], "projetos": ["privado-13"], "pct": 3.5, "por_dia": 19.4}, {"rotulo": "privado-3 · rotina 65de", "peso": 14952614.35000002, "tokens": 12041782, "sessoes": 80, "ferramentas": ["claude"], "projetos": ["privado-3"], "pct": 2.0, "por_dia": 11.4}, {"rotulo": "privado-2 · rotina 3f11", "peso": 12150647.35, "tokens": 85003988, "sessoes": 7, "ferramentas": ["claude"], "projetos": ["privado-2"], "pct": 1.7, "por_dia": 1.0}, {"rotulo": "explicavideos · Você é a fase \"ficha\" do `/explicavideo` no inemaccbot. O Nei mandou o pedido ab", "peso": 10377758.399999999, "tokens": 53837937, "sessoes": 22, "ferramentas": ["claude"], "projetos": ["explicavideos"], "pct": 1.4, "por_dia": 3.1}, {"rotulo": "privado-3 · rotina 0a8c", "peso": 9568895.249999998, "tokens": 8586776, "sessoes": 80, "ferramentas": ["claude"], "projetos": ["privado-3"], "pct": 1.3, "por_dia": 11.4}, {"rotulo": "privado-4 · rotina 28f5", "peso": 9279129.450000001, "tokens": 76442942, "sessoes": 2, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 1.3, "por_dia": 0.3}, {"rotulo": "privado-4 · rotina 62c4", "peso": 8755470.8, "tokens": 65925461, "sessoes": 9, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 1.2, "por_dia": 1.3}, {"rotulo": "eventosextremospub · Você está rodando sozinho (sem ninguém para responder) a edição diária \"Clima 24", "peso": 7578725.750000001, "tokens": 51167467, "sessoes": 9, "ferramentas": ["claude"], "projetos": ["eventosextremospub"], "pct": 1.0, "por_dia": 1.3}], "sessoes": [{"rotulo": "privado-4 · sessão", "peso": 55960626.1, "tokens": 380440429, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 7.7}, {"rotulo": "privado-4 · sessão", "peso": 25654131.150000002, "tokens": 197306536, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 3.5}, {"rotulo": "privado-4 · sessão", "peso": 21878106.6, "tokens": 184392400, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 3.0}, {"rotulo": "privado-4 · sessão", "peso": 21847767.55, "tokens": 141899182, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 3.0}, {"rotulo": "privado-4 · sessão", "peso": 20765723.0, "tokens": 136073464, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 2.8}, {"rotulo": "privado-4 · sessão", "peso": 16451987.25, "tokens": 118753573, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 2.3}, {"rotulo": "privado-4 · rotina 9bc0", "peso": 11536186.0, "tokens": 98682710, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 1.6}, {"rotulo": "privado-4 · sessão", "peso": 10800913.95, "tokens": 72271805, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 1.5}, {"rotulo": "privado-4 · rotina c3de", "peso": 10407269.15, "tokens": 87146559, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 1.4}, {"rotulo": "privado-4 · sessão", "peso": 9966445.5, "tokens": 67826395, "sessoes": 1, "ferramentas": ["claude"], "projetos": ["privado-4"], "pct": 1.4}], "repetidos": [{"n": 46, "pedido": "(pedido de projeto privado)", "projetos": ["privado-13"], "ferramenta": "claude", "dia": "2026-11-08", "de": "00:10", "ate": "00:22", "identicos": true, "peso": 8165531.7, "economia": 5116880.25, "economia_teto": 7908505.75, "tokens": 6882262, "economia_tokens": 4520070}, {"n": 41, "pedido": "(pedido de projeto privado)", "projetos": ["privado-13"], "ferramenta": "claude", "dia": "2026-11-05", "de": "00:10", "ate": "00:22", "identicos": true, "peso": 7984383.2, "economia": 4637788.0, "economia_teto": 7723951.0, "tokens": 6679858, "economia_tokens": 4032760}, {"n": 33, "pedido": "(pedido de projeto privado)", "projetos": ["privado-13"], "ferramenta": "claude", "dia": "2026-11-06", "de": "00:10", "ate": "00:20", "identicos": true, "peso": 6525128.100000001, "economia": 3912110.4, "economia_teto": 6264455.9, "tokens": 5465978, "economia_tokens": 3395232}, {"n": 20, "pedido": "(pedido de projeto privado)", "projetos": ["privado-3"], "ferramenta": "claude", "dia": "2026-11-06", "de": "00:34", "ate": "00:47", "identicos": false, "peso": 3716396.4, "economia": 3167913.6999999997, "economia_teto": 3511794.1, "tokens": 2989751, "economia_tokens": 2470836}, {"n": 20, "pedido": "(pedido de projeto privado)", "projetos": ["privado-3"], "ferramenta": "claude", "dia": "2026-11-05", "de": "00:34", "ate": "00:47", "identicos": false, "peso": 3734662.65, "economia": 3121886.1999999997, "economia_teto": 3530641.6, "tokens": 3014852, "economia_tokens": 2456472}, {"n": 20, "pedido": "(pedido de projeto privado)", "projetos": ["privado-3"], "ferramenta": "claude", "dia": "2026-11-07", "de": "00:34", "ate": "00:46", "identicos": false, "peso": 3730308.9, "economia": 3106496.1999999997, "economia_teto": 3525471.6, "tokens": 3005435, "economia_tokens": 2492154}, {"n": 20, "pedido": "(pedido de projeto privado)", "projetos": ["privado-3"], "ferramenta": "claude", "dia": "2026-11-08", "de": "00:34", "ate": "00:47", "identicos": false, "peso": 3771246.4, "economia": 3045007.4499999997, "economia_teto": 3564500.35, "tokens": 3031744, "economia_tokens": 2445642}, {"n": 20, "pedido": "(pedido de projeto privado)", "projetos": ["privado-3"], "ferramenta": "claude", "dia": "2026-11-07", "de": "00:34", "ate": "00:47", "identicos": true, "peso": 2402748.5, "economia": 2139419.95, "economia_teto": 2279737.45, "tokens": 2155086, "economia_tokens": 1932756}, {"n": 20, "pedido": "(pedido de projeto privado)", "projetos": ["privado-3"], "ferramenta": "claude", "dia": "2026-11-06", "de": "00:34", "ate": "00:47", "identicos": true, "peso": 2404609.75, "economia": 2137044.95, "economia_teto": 2276233.7, "tokens": 2156437, "economia_tokens": 1931369}, {"n": 20, "pedido": "(pedido de projeto privado)", "projetos": ["privado-3"], "ferramenta": "claude", "dia": "2026-11-05", "de": "00:34", "ate": "00:47", "identicos": true, "peso": 2387032.25, "economia": 2132413.7, "economia_teto": 2264061.2, "tokens": 2142876, "economia_tokens": 1928747}, {"n": 20, "pedido": "(pedido de projeto privado)", "projetos": ["privado-3"], "ferramenta": "claude", "dia": "2026-11-08", "de": "00:34", "ate": "00:47", "identicos": true, "peso": 2374504.75, "economia": 2127616.2, "economia_teto": 2250459.95, "tokens": 2132377, "economia_tokens": 1924624}, {"n": 6, "pedido": "Você é a fase \"ficha\" do `/explicavideo` no inemaccbot. O Nei mandou o pedido ab", "projetos": ["explicavideos"], "ferramenta": "claude", "dia": "2026-11-07", "de": "14:02", "ate": "15:56", "identicos": true, "peso": 2853333.2, "economia": 2076593.0, "economia_teto": 2287752.5, "tokens": 14754300, "economia_tokens": 9757000}, {"n": 16, "pedido": "(pedido de projeto privado)", "projetos": ["privado-13"], "ferramenta": "claude", "dia": "2026-11-07", "de": "00:10", "ate": "00:15", "identicos": true, "peso": 2661289.45, "economia": 1743726.75, "economia_teto": 2403331.0, "tokens": 2229102, "economia_tokens": 1516200}, {"n": 3, "pedido": "Você é uma sessão NOVA do Claude Code, aberta sozinha pelo vigia `continua` porq", "projetos": ["explicavideos", "privado-2"], "ferramenta": "claude", "dia": "2026-11-07", "de": "13:42", "ate": "14:57", "identicos": true, "peso": 5727471.95, "economia": 1742525.5, "economia_teto": 2275695.25, "tokens": 36608467, "economia_tokens": 11787408}, {"n": 21, "pedido": "(pedido de projeto privado)", "projetos": ["(temporária) "], "ferramenta": "claude", "dia": "2026-11-07", "de": "00:35", "ate": "00:41", "identicos": false, "peso": 1609583.4, "economia": 1455278.0, "economia_teto": 1524936.2, "tokens": 2574445, "economia_tokens": 2238620}, {"n": 2, "pedido": "Você é a fase \"visual\" do `/explicavideo` no inemaccbot. O avatar do Nei já foi ", "projetos": ["explicavideos"], "ferramenta": "claude", "dia": "2026-11-01", "de": "15:19", "ate": "15:49", "identicos": true, "peso": 2571609.1500000004, "economia": 1257015.9500000002, "economia_teto": 1257015.9500000002, "tokens": 16036664, "economia_tokens": 7390698}, {"n": 11, "pedido": "(pedido de projeto privado)", "projetos": ["privado-10"], "ferramenta": "claude", "dia": "2026-11-07", "de": "12:22", "ate": "14:55", "identicos": false, "peso": 1139217.8, "economia": 1013264.0, "economia_teto": 1034014.4500000001, "tokens": 3036874, "economia_tokens": 2715370}, {"n": 23, "pedido": "Você é o crítico de viralidade do rtex (reel 9:16 do INEMA, avatar real do Nei f", "projetos": ["rtex"], "ferramenta": "claude", "dia": "2026-11-01", "de": "14:17", "ate": "14:47", "identicos": true, "peso": 1621504.25, "economia": 900972.6000000001, "economia_teto": 1519853.15, "tokens": 3011480, "economia_tokens": 2747030}, {"n": 13, "pedido": "Você é o revisor final de um reel 9:16 do padrão r7ex (INEMA). Sua resposta deci", "projetos": ["r7ex"], "ferramenta": "claude", "dia": "2026-11-05", "de": "18:56", "ate": "20:53", "identicos": true, "peso": 1198410.9, "economia": 874935.6000000001, "economia_teto": 1093939.0999999999, "tokens": 3449442, "economia_tokens": 2360712}, {"n": 2, "pedido": "Você está rodando sozinho (sem ninguém para responder) a edição \"Previsão do Dia", "projetos": ["eventosextremospub"], "ferramenta": "claude", "dia": "2026-11-04", "de": "12:49", "ate": "13:05", "identicos": false, "peso": 1684609.4500000002, "economia": 737141.75, "economia_teto": 737141.7500000001, "tokens": 9641475, "economia_tokens": 4128608}, {"n": 16, "pedido": "Você é o crítico de viralidade do rtex (reel 9:16 do INEMA, avatar real do Nei f", "projetos": ["rtex"], "ferramenta": "claude", "dia": "2026-11-04", "de": "12:22", "ate": "13:03", "identicos": true, "peso": 1241476.75, "economia": 707078.25, "economia_teto": 1139043.95, "tokens": 2088859, "economia_tokens": 1894560}, {"n": 2, "pedido": "# Tarefa: roteiro do futviral LONGO 16:9 (semanal, 07/11/2026) Você monta o rote", "projetos": ["contaviral", "futviral"], "ferramenta": "claude", "dia": "2026-11-07", "de": "10:24", "ate": "11:20", "identicos": false, "peso": 1516390.65, "economia": 701070.95, "economia_teto": 701070.95, "tokens": 6896418, "economia_tokens": 3351386}, {"n": 42, "pedido": "(pedido de projeto privado)", "projetos": ["(temporária) "], "ferramenta": "claude", "dia": "2026-11-07", "de": "00:35", "ate": "00:40", "identicos": false, "peso": 873756.8, "economia": 655020.1, "economia_teto": 844041.9, "tokens": 2821600, "economia_tokens": 2366151}, {"n": 16, "pedido": "Você é o crítico de viralidade do rtex (reel 9:16 do INEMA, avatar real do Nei f", "projetos": ["rtex"], "ferramenta": "claude", "dia": "2026-11-04", "de": "21:56", "ate": "22:11", "identicos": true, "peso": 986359.05, "economia": 614233.5, "economia_teto": 885454.75, "tokens": 2120151, "economia_tokens": 1884225}, {"n": 12, "pedido": "(pedido de projeto privado)", "projetos": ["privado-7", "privado-14", "privado-6", "privado-1", "privado-12", "privado-5", "privado-11"], "ferramenta": "claude", "dia": "2026-11-01", "de": "08:00", "ate": "12:16", "identicos": true, "peso": 714566.15, "economia": 570376.95, "economia_teto": 645392.55, "tokens": 678830, "economia_tokens": 560549}, {"n": 2, "pedido": "Pasta: <pasta> (Impacto Sul 06/11/2026, piloto). Raiz do projeto: <pasta> (leia ", "projetos": ["eventosextremospub"], "ferramenta": "claude", "dia": "2026-11-07", "de": "12:21", "ate": "12:34", "identicos": true, "peso": 1506985.5, "economia": 536600.0, "economia_teto": 536600.0, "tokens": 8773699, "economia_tokens": 3011390}, {"n": 6, "pedido": "(pedido de projeto privado)", "projetos": ["privado-10"], "ferramenta": "claude", "dia": "2026-11-06", "de": "03:04", "ate": "04:23", "identicos": true, "peso": 621271.15, "economia": 512934.5, "economia_teto": 516753.5, "tokens": 1643943, "economia_tokens": 1354510}, {"n": 11, "pedido": "(pedido de projeto privado)", "projetos": ["privado-7", "privado-6", "privado-1", "privado-12", "privado-5", "privado-11"], "ferramenta": "claude", "dia": "2026-11-05", "de": "07:41", "ate": "12:16", "identicos": true, "peso": 612355.45, "economia": 511260.0, "economia_teto": 543206.85, "tokens": 585902, "economia_tokens": 510250}, {"n": 10, "pedido": "(pedido de projeto privado)", "projetos": ["privado-7", "privado-6", "privado-1", "privado-12", "privado-5", "privado-11"], "ferramenta": "claude", "dia": "2026-11-06", "de": "07:40", "ate": "12:01", "identicos": true, "peso": 619432.05, "economia": 497991.14999999997, "economia_teto": 552520.9500000001, "tokens": 576978, "economia_tokens": 468018}, {"n": 12, "pedido": "Você é o crítico de viralidade do rtex (reel 9:16 do INEMA, avatar real do Nei f", "projetos": ["rtex"], "ferramenta": "claude", "dia": "2026-11-04", "de": "20:11", "ate": "20:24", "identicos": true, "peso": 803208.8999999999, "economia": 477998.94999999995, "economia_teto": 698009.95, "tokens": 1652937, "economia_tokens": 1397660}], "repetidos_total": {"grupos": 91, "execucoes": 701, "economia_peso": 63015078.9, "economia_tokens": 118706314, "pct": 8.6, "economia_teto": 78172761.75, "pct_teto": 10.7, "peso": 99198936.5, "pct_peso": 13.6, "janela_min": 60, "similaridade": 0.85}, "medidores": {"claude": {"media_dia": 97357974.06428555, "projecao_semana": 681505818.4499989, "teto": 781891364, "pct_projecao": 87.2, "dias_com_uso": 6, "projecao_ritmo": 795090121.5249987, "pct_ritmo": 101.7, "semana_desde": "2026-11-02 21:00", "usado_semana": 630233061.6, "pct_semana": 80.6, "cor": "amarelo"}, "codex": {"media_dia": 6911670.000000002, "projecao_semana": 48381690.000000015, "teto": null, "pct_projecao": null, "dias_com_uso": 6, "projecao_ritmo": 56445305.00000002, "pct_ritmo": null, "cor": "cinza"}}, "limites": [], "peso_total": 729887508.45};
+const fmt = n => { n = +n || 0; for (const [l,s] of [[1e9,' bi'],[1e6,' mi'],[1e3,' mil']]) if (Math.abs(n) >= l) return (n/l).toFixed(1).replace('.',',')+s; return Math.round(n)+''; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const NOME = {claude:'Claude Code', codex:'Codex'};
+const ROT = {verde:'VERDE · folga', amarelo:'AMARELO · atenção', vermelho:'VERMELHO · vai estourar', cinza:'SEM TETO'};
+
+document.getElementById('cab').textContent =
+  `Últimos ${D.dias} dias · medido em ${D.medido_em} · ${D.arquivos} arquivos de sessão (${String(D.gb_lidos).replace('.',',')} GB)` + (D.anonimo ? ' · nomes privados ocultos' : '');
+
+function arco(a0, a1, r){ const p = a => [150 + r*Math.cos(Math.PI*(1-a)), 150 - r*Math.sin(Math.PI*(1-a))];
+  const [x0,y0] = p(a0), [x1,y1] = p(a1); return `M${x0},${y0} A${r},${r} 0 0 1 ${x1},${y1}`; }
+
+const med = document.getElementById('medidores');
+for (const [ferr, m] of Object.entries(D.medidores)) {
+  const f = D.ferramentas[ferr];
+  const pct = m.pct_semana ?? m.pct_projecao;
+  const vis = pct == null ? 0 : Math.min(pct, 120) / 120;
+  const base = m.pct_semana != null ? `usado desde ${m.semana_desde}` : (m.teto ? 'projeção da semana' : 'sem teto: rode calibrar');
+  med.insertAdjacentHTML('beforeend', `<div class="card">
+    <h3>${NOME[ferr]||ferr}</h3>
+    <svg class="gauge" viewBox="0 -8 300 183" role="img" aria-label="${esc(NOME[ferr])}: ${pct ?? 'sem teto'}% do teto">
+      <path d="${arco(0, 70/120, 120)}" stroke="var(--ok)" stroke-width="22" fill="none"/>
+      <path d="${arco(70/120, 90/120, 120)}" stroke="var(--warn)" stroke-width="22" fill="none"/>
+      <path d="${arco(90/120, 1, 120)}" stroke="var(--bad)" stroke-width="22" fill="none"/>
+      <line x1="${150+108*Math.cos(Math.PI/6)}" y1="${150-108*Math.sin(Math.PI/6)}" x2="${150+136*Math.cos(Math.PI/6)}" y2="${150-136*Math.sin(Math.PI/6)}" stroke="var(--txt)" stroke-width="2"/>
+      <text x="${150+146*Math.cos(Math.PI/6)+4}" y="${150-146*Math.sin(Math.PI/6)-6}" text-anchor="middle" font-size="11" fill="var(--mut)">teto</text>
+      <text x="22" y="170" text-anchor="middle" font-size="11" fill="var(--mut)">0</text>
+      <g class="needle" data-a="${-90 + 180*vis}" style="transform:rotate(-90deg)">
+        <line x1="150" y1="150" x2="150" y2="44" stroke="var(--txt)" stroke-width="4" stroke-linecap="round"/>
+      </g>
+      <circle cx="150" cy="150" r="9" fill="var(--txt)"/>
+      <text x="150" y="128" text-anchor="middle" font-size="26" font-weight="800">${pct == null ? '—' : String(pct).replace('.',',')+'%'}</text>
+    </svg>
+    <p style="text-align:center;margin:.2em 0 .8em"><span class="estado ${m.cor}">${ROT[m.cor]}</span><br><span class="mut" style="font-size:.85rem">${esc(base)}</span></p>
+    <dl class="kv">
+      <dt>Tokens processados</dt><dd>${fmt(f.tokens_total)}</dd>
+      <dt>· cache lido</dt><dd>${fmt(f.tokens.cache_le)}</dd>
+      <dt>· cache escrito</dt><dd>${fmt(f.tokens.cache_esc)}</dd>
+      <dt>· novos + saída</dt><dd>${fmt(f.tokens.novos + f.tokens.saida)}</dd>
+      <dt>Peso (unidade do teto)</dt><dd>${fmt(f.peso)}</dd>
+      <dt>Teto semanal</dt><dd>${m.teto ? fmt(m.teto) : '—'}</dd>
+      <dt>Projeção (média × 7)</dt><dd>${m.pct_projecao != null ? String(m.pct_projecao).replace('.',',')+'%' : fmt(m.projecao_semana)}</dd>
+      <dt>No ritmo dos ${m.dias_com_uso} dias com uso</dt><dd>${m.pct_ritmo != null ? String(m.pct_ritmo).replace('.',',')+'%' : fmt(m.projecao_ritmo)}</dd>
+      <dt>Sessões (robôs/timers)</dt><dd>${f.sessoes} (${f.headless})</dd>
+    </dl></div>`);
+}
+const av = [];
+for (const l of D.limites) av.push(`${NOME[l.ferramenta]||l.ferramenta} bateu o limite <b>${l.tipo === 'weekly' ? 'semanal' : l.tipo === 'session' ? 'de sessão (5 h)' : ''}</b> em ${l.horas_distintas} horas diferentes (último: ${esc(l.ultimo)}).`);
+av.push('O plano não publica o limite em tokens. O teto é o que você gastou na semana em que o limite cortou (<code>medir.py calibrar</code>). Uso no site, no app ou em outra máquina não aparece aqui.');
+const avEl = document.getElementById('avisos'); avEl.innerHTML = av.join('<br>'); if (D.limites.length) avEl.classList.add('alerta');
+
+function barras(id, itens, cx){
+  const el = document.getElementById(id), max = Math.max(...itens.map(i => i.pct), 1);
+  el.innerHTML = itens.map(i => `<div class="bar"><span class="nm" title="${esc(i.rotulo)}">${esc(i.rotulo)}</span><span class="pc">${String(i.pct).replace('.',',')}%</span>
+    <span class="tr"><i class="${cx && i.ferramentas.join()==='codex' ? 'cx':''}" data-w="${100*i.pct/max}"></i></span>
+    <span class="meta">${i.sessoes} sessões${i.por_dia != null ? ` · ${String(i.por_dia).replace('.',',')}/dia` : ''} · ${fmt(i.tokens)} tokens · ${i.ferramentas.map(f=>NOME[f]).join(' + ')}</span></div>`).join('') || '<p class="mut">Nada na janela.</p>';
+}
+barras('projetos', D.projetos, false);
+barras('rotinas', D.rotinas, true);
+
+const dias = document.getElementById('dias');
+const mx = Math.max(...D.por_dia.map(d => d.claude.peso + d.codex.peso), 1);
+dias.innerHTML = D.por_dia.map(d => `<div class="dia" title="${d.dia}: Claude ${fmt(d.claude.peso)} · Codex ${fmt(d.codex.peso)}">
+  <div class="col" style="height:${Math.max(2, 100*(d.claude.peso+d.codex.peso)/mx)}%"><i style="flex:${d.claude.peso}"></i><i class="cx" style="flex:${d.codex.peso}"></i></div>
+  <small>${d.dia.slice(8)}/${d.dia.slice(5,7)}</small></div>`).join('');
+
+const rt = D.repetidos_total;
+document.getElementById('reptot').innerHTML = `<b>${rt.grupos} grupos</b> com ${rt.execucoes} execuções de pedido parecido no mesmo dia, a menos de ${rt.janela_min} min uma da outra (${String(rt.pct_peso).replace('.',',')}% do peso).
+  Juntando cada grupo numa execução só: economia de <b>pelo menos ${String(rt.pct).replace('.',',')}%</b> (${fmt(rt.economia_tokens)} tokens), até ${String(rt.pct_teto).replace('.',',')}% se eram o mesmo trabalho.
+  O medidor só sugere: ache o timer (<code>systemctl --user list-timers</code>) e decida você.`;
+document.getElementById('repetidos').innerHTML = D.repetidos.slice(0, 15).map(r => `<tr>
+  <td class="n">${r.n}×${r.identicos ? ' <span class="mut">igual</span>' : ''}</td><td>${r.dia.slice(8)}/${r.dia.slice(5,7)} ${r.de}–${r.ate}</td>
+  <td>${esc(r.pedido)}</td><td>${esc(r.projetos.join(', '))}</td><td class="n">${fmt(r.economia_tokens)}</td></tr>`).join('');
+
+requestAnimationFrame(() => setTimeout(() => {
+  document.querySelectorAll('.needle').forEach(n => n.style.transform = `rotate(${n.dataset.a}deg)`);
+  document.querySelectorAll('.tr i').forEach(i => i.style.width = i.dataset.w + '%');
+}, 80));
+</script>
+</body>
+</html>
