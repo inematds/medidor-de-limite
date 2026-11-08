@@ -122,7 +122,7 @@ const D = /*__DADOS__*/null;
 const fmt = n => { n = +n || 0; for (const [l,s] of [[1e9,' bi'],[1e6,' mi'],[1e3,' mil']]) if (Math.abs(n) >= l) return (n/l).toFixed(1).replace('.',',')+s; return Math.round(n)+''; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const NOME = {claude:'Claude Code', codex:'Codex'};
-const ROT = {verde:'VERDE · folga', amarelo:'AMARELO · atenção', vermelho:'VERMELHO · vai estourar', cinza:'SEM TETO'};
+const ROT = {verde:'VERDE · folga', amarelo:'AMARELO · atenção', vermelho:'VERMELHO · vai estourar', cinza:'SEM LEITURA'};
 
 document.getElementById('cab').textContent =
   `Últimos ${D.dias} dias · medido em ${D.medido_em} · ${D.arquivos} arquivos de sessão (${String(D.gb_lidos).replace('.',',')} GB)` + (D.anonimo ? ' · nomes privados ocultos' : '');
@@ -134,7 +134,7 @@ const med = document.getElementById('medidores');
 for (const [ferr, m] of Object.entries(D.medidores)) {
   const f = D.ferramentas[ferr];
   const pct = m.pct_semana ?? m.pct_projecao;
-  const vis = pct == null ? 0 : Math.min(pct, 120) / 120;
+  const vis = (pct == null || m.aviso) ? 0 : Math.min(pct, 120) / 120;
   const base = m.pct_semana != null ? `usado desde ${m.semana_desde}` : (m.teto ? 'projeção da semana' : 'sem teto: rode calibrar');
   med.insertAdjacentHTML('beforeend', `<div class="card">
     <h3>${NOME[ferr]||ferr}</h3>

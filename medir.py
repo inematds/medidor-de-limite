@@ -250,10 +250,11 @@ def ler_claude(arquivo, col):
                 uso = msg.get("usage")
                 if not isinstance(uso, dict) or msg.get("model") == "<synthetic>":
                     continue
-                mid = msg.get("id") or r.get("requestId")
-                if mid in col.ids:  # a mesma resposta aparece em várias linhas
-                    continue
-                col.ids.add(mid)
+                mid = msg.get("id") or r.get("requestId") or r.get("uuid")
+                if mid:
+                    if mid in col.ids:  # a mesma resposta aparece em várias linhas
+                        continue
+                    col.ids.add(mid)
                 col.somar(s, dt, {
                     "novos": uso.get("input_tokens") or 0,
                     "cache_le": uso.get("cache_read_input_tokens") or 0,
@@ -551,7 +552,7 @@ def analisar(col, cfg, dias, anonimo=False, janela_min=60, similar=0.85):
                 m["semana_desde"] = ini.astimezone().strftime("%Y-%m-%d %H:%M")
                 m["usado_semana"] = usado
                 m["pct_semana"] = round(100 * usado / teto, 1)
-        m["cor"] = cor(m.get("pct_semana", m["pct_projecao"]))
+        m["cor"] = "cinza" if m.get("aviso") else cor(m.get("pct_semana", m["pct_projecao"]))
         medidores[ferr] = m
 
     limites = {}
